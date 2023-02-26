@@ -211,7 +211,7 @@ physique = {
 	"s_star": 0
 }
 echelon = 0.3  # Une voiture toutes les 2 sec
-distMax = 238
+distMax = 1000
 donnees = simulationEchelon(echelon, temps, v_0, T, a, b, delta, l, s_0, s_1,
 	physique, distMax)
 
@@ -260,35 +260,43 @@ for j in range(len(donnees)):
 
 
 # Affichage
-# Affichage position
-for voitureID in voitureIDs[:3]:
+# Affichage pour les n premières voitures
+n = 3
+for voitureID in voitureIDs[:n]:
+	# Affichage position
 	plt.figure()
 	ID = voitureID
 
 	plt.title(f"position de la voiture {ID} en fonction du temps")
 	plt.plot(temps[ID], tmp["x"][ID], label="vitesse de la voiture 0")
 
+
+	# Affichage vitesse
 	plt.figure()
 
 	plt.title(f"vitesse de la voiture {ID} en fonction du temps")
 	plt.plot(temps[ID], tmp["vx"][ID], label="vitesse de la voiture 0")
-# plt.legend()
+
+
+	# Affichage accélération
 	plt.figure()
 
 	plt.title(f"Accélération de la voiture {ID} en fonction du temps")
 	plt.plot(temps[ID], tmp["ax"][ID], label="vitesse de la voiture 0")
 
-	plt.figure()
 
+# Affichage pour toutes les voitures
+# Affichage position
 plt.title("Position des voitures en fonction du temps")
 for voitureID in voitureIDs:
 	plt.ylim(top=distMax + 100, bottom=-distMax - 100)
 	plt.plot(temps[voitureID], tmp["x"][voitureID], label=f"position de la voiture {voitureID}")
 # plt.legend()
 
-plt.figure()
 
 # Affichage vitesse
+plt.figure()
+
 plt.title("Vitesse des voitures en fonction du temps")
 for voitureID in voitureIDs:
 	plt.ylim(top=v_0 + 1, bottom=-v_0 - 1)
