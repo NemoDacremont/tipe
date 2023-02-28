@@ -29,8 +29,6 @@ def ouvreCSV(cheminFichier: str, ID_entete="Identifiant", separateur=',', exclud
 
 		out[l[ID_entete]] = l
 
-	print(out)
-	input()
 	return out
 
 

@@ -43,7 +43,7 @@ def sauvegardeCSV(data: dict, cheminFichier: str, aUneEntete=True):
 	file = open(cheminFichier, "w")
 
 	entete = list(data[list(data.keys())[0]].keys())
-	ligneEntete = str(entete).replace("[", "").replace("]", "") + "\n"
+	ligneEntete = ";".join(entete)
 
 	file.write(ligneEntete)
 	for cle in data:
