@@ -2,8 +2,9 @@
 
 import os
 import matplotlib.pyplot as plt
-import numpy as np
-import filtrage
+# import numpy as np
+# import filtrage
+from utils import sauvegardeListDictCSV
 
 
 def ouvreCSV(cheminFichier: str, ID_entete="Identifiant", separateur=',', exclude_col={}):
@@ -49,6 +50,7 @@ def readSegment(nomSegment: str, dossierDonnees="donnees"):
 			print(f"n'a pas pu lire le fichier {chemin}: {e}")
 
 
+	print(f"nb donnees: {len(donnees)}")
 	return donnees
 
 
@@ -60,12 +62,54 @@ def convertionHeure(heure: str):
 	_, p1 = heure.split("T")
 	h, m, _, _ = p1.split(":")
 
-	print(f"{h}, {m}, {10 * int(h) / 24 + int(m) / 60}")
+	# print(f"{h}, {m}, {10 * int(h) / 24 + int(m) / 60}")
 
 	return 10 * int(h) / 24 + int(m) / 60  # f"{h}:{m}"
 
 
-donnees = readSegment("Doulon P1")
+def moyenneGlissante(data: list[int], n: int):
+	out: list[float] = [0 for _ in data]
+	out[0] = data[0]
+
+	for i in range(1, len(data)):
+		if i < n:
+			for j in range(i):
+				out[i] += data[j]
+			out[i] /= i
+
+		if i >= n:
+			for j in range(n):
+				out[i] += data[i - j]
+			out[i] /= n
+
+	return out
+
+
+def readSauvegarde(cheminFichier: str, separateur=";"):
+	donnees = []
+	fichier = open(cheminFichier, "r")
+
+	lignesFichier = fichier.readlines()
+
+	entete = lignesFichier[0].replace("\n", "").split(separateur)
+
+	for i in range(1, len(lignesFichier)):
+		ligneFichier = lignesFichier[i].replace("\n", "")
+		ligne = {}
+
+		cellules = ligneFichier.split(separateur)
+		for i in range(len(entete)):
+			ligne[entete[i]] = cellules[i]
+
+		donnees.append(ligne)
+
+	return donnees
+
+
+# donnees = readSegment("Doulon P1")
+# print(donnees)
+# sauvegardeListDictCSV(donnees, "./sousDonnees/Doulon_P1")
+donnees = readSauvegarde("./sousDonnees/Doulon_P1")
 
 tmpVals = {}
 tmpCompte = {}
@@ -109,11 +153,12 @@ for i in range(len(tmp1)):
 			tmp1[j] = c
 
 
-print(tmp1)
 temps = [tmp1[i][0] for i in range(len(tmp1))]
 val = [tmp1[i][1] for i in range(len(tmp1))]
 
-val2 = filtrage.filtrage(np.array(val, dtype=np.float64), Te, filtrage.passe_bas, params)
+# val2 = filtrage.filtrage(np.array(val, dtype=np.float64), Te, filtrage.passe_bas, params)
+val2 = moyenneGlissante(val, 10)
+
 
 # pas moyenne
 # plt.figure()
@@ -143,7 +188,6 @@ plt.plot(temps, val2)
 plt.xlim(-1, 11)
 plt.xlabel("instant (heure.min)")
 plt.ylabel("débit (voitures/s)")
-
 
 
 plt.show()
