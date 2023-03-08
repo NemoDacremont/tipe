@@ -1,7 +1,10 @@
 
 prenddonnes/donnees
+
 traiteDonnees/donnees
 traiteDonnees/donnees_bak
+
+simulation/tmp
 
 __pycache__
 test_tipe/data
