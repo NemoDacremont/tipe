@@ -62,9 +62,10 @@ def sauvegardeCSV(data: dict, cheminFichier: str, aUneEntete=True):
 
 
 dossier = "./donnees"
-DT = 59  # en sec
+DT = 60  # en sec
 
 while True:
+	t1 = time.time()
 	res = requests.get("https://data.loire-atlantique.fr/api/explore/v2.1/shared/datasets/244400404_fluidite-axes-routiers-nantes-metropole@nantesmetropole/exports/csv?lang=fr&timezone=Europe%2FBerlin&use_labels=true&csv_separator=%3B")
 
 	nom_fichier = filename(dossier)
@@ -73,9 +74,15 @@ while True:
 	csv = parseCSV(res.text, separateur=';', exclude_col={"Geométrie", "geo_point_2d\r"})
 
 	sauvegardeCSV(csv, nom_fichier)
-
 	print(f"{nom_fichier} written")
-	time.sleep(DT)
+
+	t2 = time.time()
+
+	print(t1)
+	print(t2)
+	print(t2 - t1)
+	if t2 - t1 > 0:
+		time.sleep(DT - t2 + t1)
 
 
 
