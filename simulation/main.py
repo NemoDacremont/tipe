@@ -151,9 +151,9 @@ def metAJourVoiture(voitures, feux: list, alpha: int, dt: float) -> None:
 	# Euler
 	metAJourAcceleration(voitures, feux, alpha)
 	dv = physique["ax"] * dt
-	dx = (physique["vx"] + dv) * dt
+	physique["vx"] = max(0, physique["vx"] + dv)
 
-	physique["vx"] += dv
+	dx = physique["vx"] * dt
 	physique["x"] += dx
 
 	# Runge-Kutta ordre 2
@@ -216,9 +216,9 @@ def simulationEchelon(valeurEchelon: float, temps: Temps, v_0: float, T: float,
 	timerVoiture = 0
 
 	feux = [
-		creeFeu(0, distMax / 4, 40, 5),
-		creeFeu(1, distMax / 2, 40, 5),
-		creeFeu(2, 3 * distMax / 4, 40, 5),
+		creeFeu(0, distMax / 4, 10, 5),
+		creeFeu(1, distMax / 2, 10, 5),
+		creeFeu(2, 3 * distMax / 4, 10, 5),
 	]
 
 
