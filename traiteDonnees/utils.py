@@ -33,17 +33,20 @@ def sauvegardeListDictCSV(data: list, cheminFichier: str):
 
 	entete = list(data[0].keys())
 	ligneEntete = ";".join(entete) + "\n"
-	print(entete)
+	# print(entete)
 
 	file.write(ligneEntete)
 
 	for dico in data:
 		els = []
 		for col in entete:
-			els.append(dico[col])
+			try:
+				els.append(dico[col])
+			except Exception as _:
+				print("erreur:", dico)
 
 		ligne = ";".join(els) + "\n"
-		print(ligne)
+		# print(ligne)
 		file.write(ligne)
 
 	file.close()
