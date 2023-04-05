@@ -9,7 +9,7 @@ def afficheDebit(fichier: str):
 	# longueurSegment = float(donnees[0]["Longueur"])
 	# print("longueurSegment", longueurSegment)
 
-	temps, valDebit = extraitDonneesAvecMoyenne(donnees, "Débit")
+	temps, valDebit = extraitDonneesAvecMoyenne(donnees, "Vitesse")
 	# valDebitFiltree = moyenneGlissante(valDebit, 10)
 
 	# Moyenne non filtrée
@@ -32,6 +32,18 @@ def afficheDebit(fichier: str):
 	# plt.show()
 
 
+def getVitesse(fichier: str, heure: int):
+	donnees = readSauvegarde(fichier)
+	temps, valDebit = extraitDonneesAvecMoyenne(donnees, "Vitesse")
+
+	out = []
+	for i in range(len(temps)):
+		if temps[i] < heure + 1 and temps[i] >= heure:
+			out.append((temps[i], valDebit[i]))
+
+	return out
+
+
 def getDebit(fichier: str, heure: int):
 	donnees = readSauvegarde(fichier)
 	temps, valDebit = extraitDonneesAvecMoyenne(donnees, "Débit")
@@ -44,13 +56,14 @@ def getDebit(fichier: str, heure: int):
 	return out
 
 
-def sauvegardeDebit(nomFichier: str, lignes: list[str]):
+def sauvegarde(nomFichier: str, lignes: list[str]):
 	# try:
 	# 	print("fichier créé")
 	# 	fichier = open(nomFichier, "x")
 	# 	fichier.close()
 	# except:
 	# 	pass
+	print("sauvegarde", nomFichier)
 
 	fichier = open(nomFichier, 'w')
 
@@ -59,25 +72,51 @@ def sauvegardeDebit(nomFichier: str, lignes: list[str]):
 	fichier.close()
 
 
-# afficheDebit("./sousDonnees/Doulon_P1")
+def extrait(segment):
+	nomFichierLecture = f"./sousDonnees/{segment.replace(' ', '_')}"
+	nomFichierSauvegarde = f"./vitesseVehicule/{segment.replace(' ', '_')}"
 
-# N = 7
-# nomRue = 'Doulon'
-# prefixes = ['I', 'P']
-# for prefixe in prefixes:
-# 	for k in range(N):
-# 		nomFichierLecture = f"./sousDonnees/Doulon_{prefixe}{k + 1}"
-# 		nomFichierSauvegarde = f"./debitVehicule/Doulon_{prefixe}{k + 1}"
-#
-# 		data = getDebit(nomFichierLecture, 17)
-#
-# 		lignes = []
-# 		for i in range(len(data)):
-# 			lignes.append(f"{data[i][0]};{data[i][1]}")
-#
-# 		sauvegardeDebit(nomFichierSauvegarde, lignes)
-#
-# 		print(nomFichierSauvegarde, "écrit!")
+	data = getVitesse(nomFichierLecture, 17)
+
+	lignes = []
+	for i in range(len(data)):
+		lignes.append(f"{data[i][0]};{data[i][1]}\n")
+
+	sauvegarde(nomFichierSauvegarde, lignes)
+
+	print(nomFichierSauvegarde, "écrit!")
+
+
+afficheDebit("./sousDonnees/Allende_I2")
+
+
+N = 2
+nomRue = 'Allende'
+prefixes = ['I']
+exclude = []
+
+for prefixe in prefixes:
+	for k in range(N):
+		if f"{prefixe}{k + 1}" not in exclude:
+			nomFichierLecture = f"./sousDonnees/{nomRue}_{prefixe}{k + 1}"
+			nomFichierSauvegardeVitesse = f"./vitesseVehicule/{nomRue}_{prefixe}{k + 1}"
+			nomFichierSauvegardeDebit = f"./debitVehicule/{nomRue}_{prefixe}{k + 1}"
+
+			vitesses = getVitesse(nomFichierLecture, 17)
+			debits = getDebit(nomFichierLecture, 17)
+
+			lignesVitesses = []
+			for i in range(len(vitesses)):
+				lignesVitesses.append(f"{vitesses[i][0]};{vitesses[i][1]}\n")
+
+			lignesDebit = []
+			for i in range(len(debits)):
+				lignesDebit.append(f"{debits[i][0]};{debits[i][1]}\n")
+
+			sauvegarde(nomFichierSauvegardeVitesse, lignesVitesses)
+			sauvegarde(nomFichierSauvegardeDebit, lignesDebit)
+
+			print(f"{nomRue}_{prefixe}{k + 1}", "écrit!")
 
 
 

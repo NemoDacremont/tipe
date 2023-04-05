@@ -3,17 +3,19 @@ from traiteDonnees import readSegment
 from utils import sauvegardeListDictCSV
 
 
-for i in range(1, 8):
-	nomSegment = f"Doulon P{i}"
-	nomFichier = f"Doulon_P{i}"
-	donnees = readSegment(nomSegment)
-	sauvegardeListDictCSV(donnees, f"./sousDonnees/{nomFichier}")
-	print(nomFichier, "fini")
+SEGMENT = "Allende"
+PREFIXES = ["I"]
+N = 3
 
+EXCLUDE = []
 
-for i in range(1, 8):
-	nomSegment = f"Doulon I{i}"
-	nomFichier = f"Doulon_I{i}"
-	donnees = readSegment(nomSegment)
-	sauvegardeListDictCSV(donnees, f"./sousDonnees/{nomFichier}")
-	print(nomFichier, "fini")
+for prefixe in PREFIXES:
+	for i in range(N):
+		if f"{prefixe}{i + 1}" not in EXCLUDE:
+			nomSegment = f"{SEGMENT} {prefixe}{i + 1}"
+			nomFichier = f"{SEGMENT}_{prefixe}{i + 1}"
+			donnees = readSegment(nomSegment)
+			sauvegardeListDictCSV(donnees, f"./sousDonnees/{nomFichier}")
+
+			print(nomFichier, "fini")
+
