@@ -34,6 +34,27 @@ def lireFichierDebit(nomFichier: str, separateur=';') -> list[float]:
 	return debits
 
 
+def lireFichierVitesse(nomFichier: str, separateur=';') -> list[float]:
+	"""
+		Lit un fichier CSV au format temps;vitesse
+	"""
+	vitesses = []
+	fichier = open(nomFichier, 'r')
+
+	lignes = fichier.readlines()
+
+	fichier.close()
+
+
+	for ligne in lignes:
+		valeurs = ligne.replace("\n", "").split(";")
+		_, vitesse = valeurs
+
+		vitesses.append(float(vitesse))
+
+	return vitesses
+
+
 def creeVoiture(ID: int, v_0: float, T: float, a: float, b: float, delta: int, l: float,
 		s_0: float, s_1: float, physique=PHYSIQUE_DEFAUT, voiture_suivie=None):
 	"""
@@ -149,10 +170,12 @@ def metAJourAcceleration(voitures: list, feux: list, alpha: int) -> None:
 				if alpha == 0 or voitures[alpha - 1]["physique"]["x"] > feu["position"]:
 					delta_v = 0 - vx  # la vitesse du véhicule virtuel est nulle
 					s_alpha = feu["position"] - x - voiture["l"]
-					break
 
+
+	# if voiture["ID"] == 5:
+	# 	print("deltav, s_alpha:", delta_v, voitures[alpha - 1]["physique"]["vx"] - vx, s_alpha)
 	# On recalcule s_star dans un premier temps
-	physique["s_star"] = s_0 + s_1 * np.sqrt(abs(vx / v_0)) + T * vx + (vx * delta_v) / (2 * np.sqrt(abs(a * b)))
+	physique["s_star"] = s_0 + s_1 * np.sqrt(vx / v_0) + T * vx + (vx * delta_v) / (2 * np.sqrt(a * b))
 
 	# On peut alors calculer l'accélération
 	voiture["physique"]["ax"] = a * (1 - (vx / v_0)**delta - (physique["s_star"] / s_alpha)**2)
@@ -170,6 +193,8 @@ def metAJourVoiture(voitures, feux: list, alpha: int, dt: float) -> None:
 	metAJourAcceleration(voitures, feux, alpha)
 	dv = physique["ax"] * dt
 	physique["vx"] = max(0, physique["vx"] + dv)
+	# if voiture["ID"] == 5:
+	# 	print("a, v, s_star:", physique["ax"], physique["vx"], physique["s_star"])
 
 	dx = physique["vx"] * dt
 	physique["x"] += dx
@@ -211,9 +236,9 @@ def simulation(voitures: list, temps: Temps):
 
 
 FEUX_DEFAUT = [
-	creeFeu(0, DIST_MAX / 4, 20, 2),
-	creeFeu(1, DIST_MAX / 2, 20, 2),
-	creeFeu(2, 3 * DIST_MAX / 4, 20, 2),
+	creeFeu(0, 9 * DIST_MAX / 10, 30, 3),
+	# creeFeu(1, DIST_MAX / 2, 20, 2),
+	# creeFeu(2, 3 * DIST_MAX / 4, 20, 2),
 ]
 
 
@@ -230,8 +255,7 @@ def simulationEchelon(valeurEchelon: float, temps: Temps, v_0: float, T: float,
 			... caractéristiques des voitures
 
 
-		Ajout temporaire: il y a un feu ) distMax / 2
-
+		Ajout temporaire: il y a un feu à distMax / 2
 	"""
 	voitures = voituresDebut
 	donneesVoitures = []
@@ -241,7 +265,7 @@ def simulationEchelon(valeurEchelon: float, temps: Temps, v_0: float, T: float,
 	dt = temps[1] - temps[0]
 	timerVoiture = 0
 
-	ID = len(voitures)
+	ID = 0
 	if len(voitures) > 0:
 		ID = voitures[-1]["ID"] + 1
 
@@ -316,6 +340,10 @@ def simulationRue(debitRue: list[float], v_0: float, T: float, a: float,
 		Fait une suite de simulation en échelon durant chacune 1 minute où avec
 		debitRue est une liste des débits de voitures par minute de la rue
 		correspondante.
+
+		donneesVoitures: [
+			i: dict[int: voiture]
+		]
 	"""
 	donneesVoitures = []
 	donneesFeux = []

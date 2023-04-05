@@ -1,4 +1,24 @@
 
+from constantes import DT
+
+
+def moyenneGlissante(data: list[int | float], n: int) -> list[int | float]:
+	out: list[float] = [0 for _ in data]
+	out[0] = data[0]
+
+	for i in range(1, len(data)):
+		if i < n:
+			for j in range(i):
+				out[i] += data[j]
+			out[i] /= i
+
+		elif i >= n:
+			for j in range(n):
+				out[i] += data[i - j]
+			out[i] /= n
+
+	return out
+
 
 def convertiDonneesPlotVoitures(donneesVoitures):
 	"""
@@ -116,5 +136,49 @@ def convertiDonneesPlotFeux(donneesFeux):
 			donneesPlotFeux["etat"][feuID].append(etat)
 
 	return feuIDs, tempsFeux, donneesPlotFeux
+
+
+def extraitVitesseMoyenne1(donneesVoitures):
+	"""
+		Retourne la vitesse moyenne pour les temps i * deltaT, i un entier
+	"""
+	vitessesMoyennes = [0 for _ in range(len(donneesVoitures))]
+
+	for i in range(len(donneesVoitures)):
+		N = 0
+		voituresEls = donneesVoitures[i]
+		for voitureEl in voituresEls:
+			_, voiture = voitureEl
+			vx = voiture["physique"]["vx"]
+			vitessesMoyennes[i] += vx * 3.6
+			N += 1
+
+		vitessesMoyennes[i] /= N
+
+	return vitessesMoyennes
+
+
+def extraitVitesseMoyenne(donneesVoitures, deltaT: float, dt=DT):
+	"""
+		Retourne la vitesse moyenne pour les temps i * deltaT, i un entier
+	"""
+	nombreParties = int(len(donneesVoitures) * dt / deltaT)
+	taillePartie = int(len(donneesVoitures) / nombreParties)
+	vitessesMoyennes = [0 for _ in range(nombreParties)]
+	print(taillePartie, nombreParties)
+
+	for i in range(nombreParties):
+		N = 0
+		for j in range(taillePartie):
+			voituresEls = donneesVoitures[i * taillePartie + j]
+			for voitureEl in voituresEls:
+				_, voiture = voitureEl
+				vx = voiture["physique"]["vx"]
+				vitessesMoyennes[i] += vx * 3.6
+				N += 1
+
+		vitessesMoyennes[i] /= N
+
+	return vitessesMoyennes
 
 
