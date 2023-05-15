@@ -3,8 +3,8 @@ from traiteDonnees import readSegment
 from utils import sauvegardeListDictCSV
 
 
-SEGMENT = "Allende"
-PREFIXES = ["I"]
+SEGMENT = "Strasbourg"
+PREFIXES = ["I", "P"]
 N = 3
 
 EXCLUDE = []

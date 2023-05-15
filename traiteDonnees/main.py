@@ -90,9 +90,9 @@ def extrait(segment):
 afficheDebit("./sousDonnees/Allende_I2")
 
 
-N = 2
-nomRue = 'Allende'
-prefixes = ['I']
+N = 3
+nomRue = "Strasbourg"
+prefixes = ["I", "P"]
 exclude = []
 
 for prefixe in prefixes:
