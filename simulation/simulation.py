@@ -109,19 +109,19 @@ def metAJourFeu(feu: dict, dt: float) -> None:
 		if feu["tempsRestant"] <= 0:
 			feu["tempsRestant"] = feu["dureeOrange"]
 			feu["etat"] = "orange"
-			print("feu passe au orange")
+			# print("feu passe au orange")
 
 	if feu["etat"] == "orange":
 		if feu["tempsRestant"] <= 0:
 			feu["tempsRestant"] = feu["periode"]
 			feu["etat"] = "rouge"
-			print("feu passe au rouge")
+			# print("feu passe au rouge")
 
 	if feu["etat"] == "rouge":
 		if feu["tempsRestant"] <= 0:
 			feu["tempsRestant"] = feu["periode"]
 			feu["etat"] = "vert"
-			print("feu passe au vert")
+			# print("feu passe au vert")
 
 
 
@@ -173,8 +173,12 @@ def metAJourAcceleration(voitures: list, feux: list, alpha: int) -> None:
 
 
 	# if voiture["ID"] == 5:
-	# 	print("deltav, s_alpha:", delta_v, voitures[alpha - 1]["physique"]["vx"] - vx, s_alpha)
+	# 	# print("deltav, s_alpha:", delta_v, voitures[alpha - 1]["physique"]["vx"] - vx, s_alpha)
 	# On recalcule s_star dans un premier temps
+	if s_alpha < 10**-6:
+		s_alpha = 10**-6
+	
+
 	physique["s_star"] = s_0 + s_1 * np.sqrt(vx / v_0) + T * vx + (vx * delta_v) / (2 * np.sqrt(a * b))
 
 	# On peut alors calculer l'accélération
@@ -194,7 +198,7 @@ def metAJourVoiture(voitures, feux: list, alpha: int, dt: float) -> None:
 	dv = physique["ax"] * dt
 	physique["vx"] = max(0, physique["vx"] + dv)
 	# if voiture["ID"] == 5:
-	# 	print("a, v, s_star:", physique["ax"], physique["vx"], physique["s_star"])
+	# 	# print("a, v, s_star:", physique["ax"], physique["vx"], physique["s_star"])
 
 	dx = physique["vx"] * dt
 	physique["x"] += dx
@@ -286,8 +290,8 @@ def simulationEchelon(valeurEchelon: float, temps: Temps, v_0: float, T: float,
 				# v0 = voitures[-1]["physique"]["vx"] / 2
 				v0 = 0
 
-				print(f"x0: {x0}")
-				print(f"v0: {v0}")
+				# print(f"x0: {x0}")
+				# print(f"v0: {v0}")
 
 				physiqueVoiture["x"] = x0
 				physiqueVoiture["vx"] = v0
@@ -295,9 +299,9 @@ def simulationEchelon(valeurEchelon: float, temps: Temps, v_0: float, T: float,
 			nouvelleVoiture = creeVoiture(ID, v_0, T, a, b, delta, l, s_0, s_1,
 				physiqueVoiture, voitureSuivie)
 			voitures.append(nouvelleVoiture)
-			print("création voiture", ID)
-			print("nouvelleVoiture x:", nouvelleVoiture["physique"]["x"])
-			print("elle suit la voiture", voitureSuivie)
+			# # print("création voiture", ID)
+			# # print("nouvelleVoiture x:", nouvelleVoiture["physique"]["x"])
+			# # print("elle suit la voiture", voitureSuivie)
 			ID += 1
 
 
@@ -325,7 +329,7 @@ def simulationEchelon(valeurEchelon: float, temps: Temps, v_0: float, T: float,
 		for alpha in range(len(voitures) - 1, -1, -1):
 			voiture = voitures[alpha]
 			if voiture["physique"]["x"] >= distMax:
-				print("retire voiture ID:", voiture["ID"])
+				# print("retire voiture ID:", voiture["ID"])
 				voitures.pop(alpha)
 
 
@@ -341,7 +345,7 @@ def simulationRue(debitRue: list[float], v_0: float, T: float, a: float,
 		correspondante.
 
 		donneesVoitures: [
-			i: dict[int: voiture]
+			i -> dict[id: int -> voiture]
 		]
 	"""
 	donneesVoitures = []

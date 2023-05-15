@@ -18,9 +18,10 @@ PHYSIQUE = {
 	"s_star": 0
 }
 
-# Constantes simulation
-DEBUT = 0
-FIN = 60
-DT = 0.01
+# Constantes simulation échelon
+DEBUT = 0  # en secones, début de l'échelon
+FIN = 60  # en secondes, fin de l'échelon
+DT = 0.01  # dt de l'échelon
 
+# Relatif à la rue
 DIST_MAX = 245
