@@ -1,6 +1,7 @@
 #!/bin/env python
 
 from matplotlib import pyplot as plt
+import sys
 
 
 def extraitAttribut(donnees, attribut: str):
@@ -11,10 +12,27 @@ def extraitAttribut(donnees, attribut: str):
 	return out 
 
 
+def afficheGraphe(donnees, attribut: str):
+	colonne = extraitAttribut(donnees, attribut)
+
+	plt.figure()
+
+	plt.plot(colonne, label=f"{attribut}")
+
+	plt.title(f"{attribut} en fonction des itérations")
+
+	plt.ylabel("attribut")
+	plt.xlabel("itérations")
+	plt.legend()
 
 
 
 nomFichier = "donneesOptimisations.csv"
+
+if len(sys.argv) > 1:
+	nomFichier = sys.argv[1]
+
+
 fichier = open(nomFichier, "r")
 
 lignes = fichier.readlines()
@@ -22,6 +40,7 @@ lignes = fichier.readlines()
 fichier.close()
 
 
+graphes = ["ecarts", "grad", "a", "v0"]
 donnees = []
 for ligne in lignes:
 	tmp = ligne.split(",")
@@ -40,12 +59,8 @@ for ligne in lignes:
 	})
 
 
-ecarts = extraitAttribut(donnees, "ecarts")
-
-plt.figure()
-
-plt.plot(ecarts)
+for attribut in graphes:
+	afficheGraphe(donnees, attribut)
 
 plt.show()
-
 

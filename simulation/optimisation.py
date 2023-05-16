@@ -53,7 +53,7 @@ def somme(L):
 	return s
 
 
-def optimisation(epsilon, h: float, alpha=0.1, beta=0.2, gamma=1):
+def optimisation(epsilon, h: float, alpha=0.1):
 
 	donnees = []
 
@@ -89,11 +89,11 @@ def optimisation(epsilon, h: float, alpha=0.1, beta=0.2, gamma=1):
 		#
 		#
 		# vitessesMoyennes_minutes = extraitVitesseMoyenne(donneesVoitures, 60)
-		# ecartsV = somme([(vitessesMoyennes_minutes[i] - vitesses[i]) ** 2 for i in range(N)])
+		ecartsV = 0  # somme([(vitessesMoyennes_minutes[i] - vitesses[i]) ** 2 for i in range(N)])
 
 
 		diffA = (ecartsA - ecarts) / h
-		# diffV = (ecartsV - ecarts) / h
+		diffV = 0  # (ecartsV - ecarts) / h
 
 
 		grad = diffA  # + diffV
@@ -103,12 +103,12 @@ def optimisation(epsilon, h: float, alpha=0.1, beta=0.2, gamma=1):
 
 		donnees.append({
 			"a": a,
-			# "v0": v0,
+			"v0": v0,
 			"ecarts": ecarts,
 			"ecartsA": ecartsA,
-			# "ecartsV": ecartsV,
+			"ecartsV": ecartsV,
 			"diffA": diffA,
-			# "diffV": diffV,
+			"diffV": diffV,
 			"grad": grad
 		})
 
@@ -122,6 +122,15 @@ def optimisation(epsilon, h: float, alpha=0.1, beta=0.2, gamma=1):
 		print("diffA:", diffA)
 		# print("diffV:", diffV)
 		print("max grad:", abs(grad))
+
+
+		fichier = open("donneesOptimisations.csv", "w")
+
+		ligne = [a, v0, ecarts, ecartsA, ecartsV, grad, diffA, diffV]
+		ligne = [str(ligne[i]) for i in range(len(ligne))]
+
+		fichier.write(ligne)
+		fichier.close()
 
 	return donnees
 
