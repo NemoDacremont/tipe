@@ -36,7 +36,7 @@ DIST_MAX = 245
 DUREE_FEU = 20
 
 
-N = 3
+N = 1
 
 temps = [DEBUT + DT * i for i in range(int((FIN - DEBUT) / DT))]
 echelon = 0.5  # Une voiture toutes les 2 sec
@@ -83,44 +83,44 @@ def optimisation(epsilon, h: float, alpha=0.1, beta=0.2, gamma=1):
 		ecartsA = somme([(vitessesMoyennes_minutes[i] - vitesses[i]) ** 2 for i in range(N)])
 
 
-		v02 = v0 + h
-		donneesVoitures, _ = simulationOptimisation(debits, v02, T, a, B,
-			DELTA, L, S0, S1, PHYSIQUE, DIST_MAX)
-
-
-		vitessesMoyennes_minutes = extraitVitesseMoyenne(donneesVoitures, 60)
-		ecartsV = somme([(vitessesMoyennes_minutes[i] - vitesses[i]) ** 2 for i in range(N)])
+		# v02 = v0 + h
+		# donneesVoitures, _ = simulationOptimisation(debits, v02, T, a, B,
+		# 	DELTA, L, S0, S1, PHYSIQUE, DIST_MAX)
+		#
+		#
+		# vitessesMoyennes_minutes = extraitVitesseMoyenne(donneesVoitures, 60)
+		# ecartsV = somme([(vitessesMoyennes_minutes[i] - vitesses[i]) ** 2 for i in range(N)])
 
 
 		diffA = (ecartsA - ecarts) / h
-		diffV = (ecartsV - ecarts) / h
+		# diffV = (ecartsV - ecarts) / h
 
 
-		grad = diffA + diffV
+		grad = diffA  # + diffV
 
 		a = a - alpha * diffA
-		v0 = v0 - alpha * diffV
+		# v0 = v0 - alpha * diffV
 
 		donnees.append({
 			"a": a,
-			"v0": v0,
+			# "v0": v0,
 			"ecarts": ecarts,
 			"ecartsA": ecartsA,
-			"ecartsV": ecartsV,
+			# "ecartsV": ecartsV,
 			"diffA": diffA,
-			"diffV": diffV,
+			# "diffV": diffV,
 			"grad": grad
 		})
 
 		print("Fin itération", i, ":")
 		print("a:", a)
-		print("v0:", v0)
+		# print("v0:", v0)
 		print("grad:", grad)
 		print("ecarts:", ecarts)
 		print("ecartsA:", ecartsA)
-		print("ecartsV:", ecartsV)
+		# print("ecartsV:", ecartsV)
 		print("diffA:", diffA)
-		print("diffV:", diffV)
+		# print("diffV:", diffV)
 		print("max grad:", abs(grad))
 
 	return donnees
