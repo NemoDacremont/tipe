@@ -8,12 +8,14 @@ from affichage import affichePositionVoitures, afficheVitesseVoitures, \
 	afficheAccelerationVoitures, show
 from simulationOptimisation import simulationOptimisation
 
+from numpy import sqrt
+
 # pour des conseils:
 # https://traffic-simulation.de/info/info_IDM.html
 # Caractéristiques voiture / modèle
 V0 = 8.33  # 3.33  # =5.4 à 17h17
 T = 1.6
-A = 2.0  # 2.77  # 0.73
+A = 2  # 2.77  # 0.73
 B = 2
 DELTA = 4
 L = 4
@@ -36,7 +38,7 @@ DIST_MAX = 245
 DUREE_FEU = 20
 
 
-N = 1
+N = 4
 
 temps = [DEBUT + DT * i for i in range(int((FIN - DEBUT) / DT))]
 echelon = 0.5  # Une voiture toutes les 2 sec
@@ -53,7 +55,7 @@ def somme(L):
 	return s
 
 
-def optimisation(epsilon, h: float, alpha=0.1):
+def optimisation(epsilon, h, alpha=0.1):
 
 	donnees = []
 
@@ -64,7 +66,6 @@ def optimisation(epsilon, h: float, alpha=0.1):
 	v0 = V0
 	dureeFeu = DUREE_FEU
 	i = 0
-	ecarts = [1 for i in range(N)]
 
 	while i == 0 or abs(grad) > epsilon:
 		i += 1
@@ -72,34 +73,34 @@ def optimisation(epsilon, h: float, alpha=0.1):
 		donneesVoitures, _ = simulationOptimisation(debits, v0, T, a, B, DELTA, L, S0, S1, PHYSIQUE, DIST_MAX)
 
 		vitessesMoyennes_minutes = extraitVitesseMoyenne(donneesVoitures, 60)
-		ecarts = somme([(vitessesMoyennes_minutes[i] - vitesses[i]) ** 2 for i in range(N)])
+		ecarts = somme([(vitessesMoyennes_minutes[i] - vitesses[i]) ** 2 for i in range(1, N)])
 
 
-		a2 = a + h
-		donneesVoitures, _ = simulationOptimisation(debits, v0, T, a2, B,
-			DELTA, L, S0, S1, PHYSIQUE, DIST_MAX)
-
-		vitessesMoyennes_minutes = extraitVitesseMoyenne(donneesVoitures, 60)
-		ecartsA = somme([(vitessesMoyennes_minutes[i] - vitesses[i]) ** 2 for i in range(N)])
-
-
-		# v02 = v0 + h
-		# donneesVoitures, _ = simulationOptimisation(debits, v02, T, a, B,
+		# a2 = a + h
+		# donneesVoitures, _ = simulationOptimisation(debits, v0, T, a2, B,
 		# 	DELTA, L, S0, S1, PHYSIQUE, DIST_MAX)
 		#
-		#
 		# vitessesMoyennes_minutes = extraitVitesseMoyenne(donneesVoitures, 60)
-		ecartsV = 0  # somme([(vitessesMoyennes_minutes[i] - vitesses[i]) ** 2 for i in range(N)])
+		ecartsA = 0  # somme([(vitessesMoyennes_minutes[i] - vitesses[i]) ** 2 for i in range(1, N)])
 
 
-		diffA = (ecartsA - ecarts) / h
-		diffV = 0  # (ecartsV - ecarts) / h
+		v02 = v0 + h
+		donneesVoitures, _ = simulationOptimisation(debits, v02, T, a, B,
+			DELTA, L, S0, S1, PHYSIQUE, DIST_MAX)
 
 
-		grad = diffA  # + diffV
+		vitessesMoyennes_minutes = extraitVitesseMoyenne(donneesVoitures, 60)
+		ecartsV = somme([(vitessesMoyennes_minutes[i] - vitesses[i]) ** 2 for i in range(1, N)])
 
-		a = a - alpha * diffA
-		# v0 = v0 - alpha * diffV
+
+		diffA = 0  # (ecartsA - ecarts) / h
+		diffV = (ecartsV - ecarts) / h
+
+
+		grad = abs(diffA) + abs(diffV)
+
+		# a = a - alpha * diffA  * ecartsA
+		v0 = v0 - alpha * diffV * ecartsV
 
 		donnees.append({
 			"a": a,
@@ -114,27 +115,27 @@ def optimisation(epsilon, h: float, alpha=0.1):
 
 		print("Fin itération", i, ":")
 		print("a:", a)
-		# print("v0:", v0)
+		print("v0:", v0)
 		print("grad:", grad)
 		print("ecarts:", ecarts)
 		print("ecartsA:", ecartsA)
-		# print("ecartsV:", ecartsV)
+		print("ecartsV:", ecartsV)
 		print("diffA:", diffA)
-		# print("diffV:", diffV)
+		print("diffV:", diffV)
 		print("max grad:", abs(grad))
 
 
-		fichier = open("donneesOptimisations.csv", "w")
+		fichier = open("donneesOptimisations.csv", "a")
 
 		ligne = [a, v0, ecarts, ecartsA, ecartsV, grad, diffA, diffV]
 		ligne = [str(ligne[i]) for i in range(len(ligne))]
 
-		fichier.write(ligne)
+		fichier.write(",".join(ligne) + "\n")
 		fichier.close()
 
 	return donnees
 
-donnees = optimisation(1, 0.00001, 0.00001)
+donnees = optimisation(0.4, 10**-13, 10**-8)
 
 fichier = open("donneesOptimisations.csv", "w")
 
