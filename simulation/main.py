@@ -17,9 +17,9 @@ echelon = 0.5  # Une voiture toutes les 2 sec
 
 # donneesVoitures, donneesFeux = simulationEchelon(echelon, temps, V0, T, A, B,
 # 	DELTA, L, S0, S1, PHYSIQUE, DIST_MAX)
-N = 3
-debits = lireFichierDebit("./debitVehicule/Strasbourg_P1")[:N]
-vitesses = lireFichierVitesse("./vitesseVehicule/Strasbourg_P1")[:N]
+N = 4
+debits = lireFichierDebit("./debitVehicule/Strasbourg_P1")[:N + 1]
+vitesses = lireFichierVitesse("./vitesseVehicule/Strasbourg_P1")[:N + 1]
 donneesVoitures, donneesFeux = simulationRue(debits, V0, T, A, B,
 	DELTA, L, S0, S1, PHYSIQUE, DIST_MAX)
 
@@ -68,21 +68,23 @@ plt.legend()
 plt.xlabel("temps (en sec)")
 
 ###
+indicesVitesse = [i * taillePartie for i in range(len(vitesses) - 1)]
 
 plt.figure()
 plt.title("Vitesse moyenne minutes")
 plt.plot(indicesVitesse, vitessesMoyennes_minutes, label="Vitesse simulation")
 
-indicesVitesse = [i * taillePartie for i in range(len(vitesses))]
-plt.plot(indicesVitesse, vitesses, label="Vitesse réelle")
+indicesVitesse = [i * taillePartie for i in range(len(vitesses) - 1)]
+plt.plot(indicesVitesse, vitesses[1:], label="Vitesse réelle")
 
 plt.xlabel("temps (en sec)")
 plt.legend()
 
 
 # Affichage écart
-eps = [vitessesMoyennes_minutes[i] - vitesses[i] for i in range(len(vitesses))]
+eps = [vitessesMoyennes_minutes[i] - vitesses[i] for i in range(len(vitesses) - 1)]
 # eps2 = [(vitessesMoyennes_minutes[i] - vitesses[i])**2 for i in range(len(vitesses))]
+indicesVitesse = [i * taillePartie for i in range(len(vitesses) - 1)]
 
 plt.figure()
 plt.title("Écart Vitesse moyenne minutes")

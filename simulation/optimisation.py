@@ -43,11 +43,25 @@ N = 4
 temps = [DEBUT + DT * i for i in range(int((FIN - DEBUT) / DT))]
 echelon = 0.5  # Une voiture toutes les 2 sec
 
+fichierSauvegardeTemporaire = "tmp.csv"
+
+# Ajoute l'entête du fichier temporaire
+entete = ["a", "v0", "ecarts", "ecartsA", "ecartsV", "grad", "diffA", "diffV"]
+entete = ",".join(entete) + "\n"
+
+fichier = open(fichierSauvegardeTemporaire, "w")
+fichier.write(entete)
+fichier.close()
+
+# Lecture des fichiers de données réelles
 debits = lireFichierDebit("./debitVehicule/Strasbourg_P1")[:N]
 vitesses = lireFichierVitesse("./vitesseVehicule/Strasbourg_P1")[:N]
 
 
-def somme(L):
+def somme(L: list):
+	"""
+		Retourne la somme des éléments d'une liste de int ou de float
+	"""
 	s = 0
 	for el in L:
 		s += el
@@ -76,12 +90,12 @@ def optimisation(epsilon, h, alpha=0.1):
 		ecarts = somme([(vitessesMoyennes_minutes[i] - vitesses[i]) ** 2 for i in range(1, N)])
 
 
-		# a2 = a + h
-		# donneesVoitures, _ = simulationOptimisation(debits, v0, T, a2, B,
-		# 	DELTA, L, S0, S1, PHYSIQUE, DIST_MAX)
-		#
-		# vitessesMoyennes_minutes = extraitVitesseMoyenne(donneesVoitures, 60)
-		ecartsA = 0  # somme([(vitessesMoyennes_minutes[i] - vitesses[i]) ** 2 for i in range(1, N)])
+		a2 = a + h
+		donneesVoitures, _ = simulationOptimisation(debits, v0, T, a2, B,
+			DELTA, L, S0, S1, PHYSIQUE, DIST_MAX)
+
+		vitessesMoyennes_minutes = extraitVitesseMoyenne(donneesVoitures, 60)
+		ecartsA = somme([(vitessesMoyennes_minutes[i] - vitesses[i]) ** 2 for i in range(1, N)])
 
 
 		v02 = v0 + h
@@ -93,13 +107,13 @@ def optimisation(epsilon, h, alpha=0.1):
 		ecartsV = somme([(vitessesMoyennes_minutes[i] - vitesses[i]) ** 2 for i in range(1, N)])
 
 
-		diffA = 0  # (ecartsA - ecarts) / h
+		diffA = (ecartsA - ecarts) / h
 		diffV = (ecartsV - ecarts) / h
 
 
-		grad = abs(diffA) + abs(diffV)
+		grad = max(abs(diffA), abs(diffV))
 
-		# a = a - alpha * diffA  * ecartsA
+		a = a - alpha * diffA  * ecartsA
 		v0 = v0 - alpha * diffV * ecartsV
 
 		donnees.append({
@@ -125,7 +139,7 @@ def optimisation(epsilon, h, alpha=0.1):
 		print("max grad:", abs(grad))
 
 
-		fichier = open("donneesOptimisations.csv", "a")
+		fichier = open(fichierSauvegardeTemporaire, "a")
 
 		ligne = [a, v0, ecarts, ecartsA, ecartsV, grad, diffA, diffV]
 		ligne = [str(ligne[i]) for i in range(len(ligne))]
