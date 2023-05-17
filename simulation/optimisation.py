@@ -35,7 +35,7 @@ FIN = 60
 DT = 0.01
 
 DIST_MAX = 245
-DUREE_FEU = 20
+DUREE_FEU = 26
 
 
 N = 4
@@ -46,7 +46,9 @@ echelon = 0.5  # Une voiture toutes les 2 sec
 fichierSauvegardeTemporaire = "tmp.csv"
 
 # Ajoute l'entête du fichier temporaire
-entete = ["a", "v0", "ecarts", "ecartsA", "ecartsV", "grad", "diffA", "diffV"]
+entete = ["a", "v0", "dureeFeu", "ecarts", "ecartsA", "ecartsV", "ecartsF",
+	"grad", "diffA", "diffV", "diffF"]
+
 entete = ",".join(entete) + "\n"
 
 fichier = open(fichierSauvegardeTemporaire, "w")
@@ -80,68 +82,93 @@ def optimisation(epsilon, h, alpha=0.1):
 	v0 = V0
 	dureeFeu = DUREE_FEU
 	i = 0
+	K = 10**-9
 
 	while i == 0 or abs(grad) > epsilon:
 		i += 1
+		feux = [
+			creeFeu(0, 40, dureeFeu, 3)
+		]
 
-		donneesVoitures, _ = simulationOptimisation(debits, v0, T, a, B, DELTA, L, S0, S1, PHYSIQUE, DIST_MAX)
+		donneesVoitures, _ = simulationOptimisation(debits, v0, T, a, B, DELTA, L, S0, S1, PHYSIQUE, DIST_MAX, feux=feux)
 
 		vitessesMoyennes_minutes = extraitVitesseMoyenne(donneesVoitures, 60)
 		ecarts = somme([(vitessesMoyennes_minutes[i] - vitesses[i]) ** 2 for i in range(1, N)])
 
 
 		a2 = a + h
-		donneesVoitures, _ = simulationOptimisation(debits, v0, T, a2, B,
+		donneesVoituresA, _ = simulationOptimisation(debits, v0, T, a2, B,
 			DELTA, L, S0, S1, PHYSIQUE, DIST_MAX)
 
-		vitessesMoyennes_minutes = extraitVitesseMoyenne(donneesVoitures, 60)
-		ecartsA = somme([(vitessesMoyennes_minutes[i] - vitesses[i]) ** 2 for i in range(1, N)])
+		vitessesMoyennes_minutesA = extraitVitesseMoyenne(donneesVoituresA, 60)
+		ecartsA = somme([(vitessesMoyennes_minutesA[i] - vitesses[i]) ** 2 for i in range(1, N)])
 
 
-		v02 = v0 + h
-		donneesVoitures, _ = simulationOptimisation(debits, v02, T, a, B,
-			DELTA, L, S0, S1, PHYSIQUE, DIST_MAX)
+		# v02 = v0 + h
+		# donneesVoitures, _ = simulationOptimisation(debits, v02, T, a, B,
+		# 	DELTA, L, S0, S1, PHYSIQUE, DIST_MAX)
+		#
+		#
+		# vitessesMoyennes_minutes = extraitVitesseMoyenne(donneesVoitures, 60)
+		ecartsV = 0  # somme([(vitessesMoyennes_minutes[i] - vitesses[i]) ** 2 for i in range(1, N)])
 
+		H = 1 * h
+		feux2 = [
+			creeFeu(0, 40, (dureeFeu + H), 3)
+		]
 
-		vitessesMoyennes_minutes = extraitVitesseMoyenne(donneesVoitures, 60)
-		ecartsV = somme([(vitessesMoyennes_minutes[i] - vitesses[i]) ** 2 for i in range(1, N)])
+		print(feux2)
+
+		donneesVoituresFeux, _ = simulationOptimisation(debits, v0, T, a, B,
+			DELTA, L, S0, S1, PHYSIQUE, DIST_MAX, feux=feux2)
+
+		vitessesMoyennes_minutesFeux = extraitVitesseMoyenne(donneesVoituresFeux, 60)
+		ecartsF = somme([(vitessesMoyennes_minutesFeux[i] - vitesses[i]) ** 2 for i in range(1, N)])
 
 
 		diffA = (ecartsA - ecarts) / h
-		diffV = (ecartsV - ecarts) / h
+		diffV = 0  # (ecartsV - ecarts) / h
+		diffF = (ecartsF - ecarts) / H
 
 
-		grad = max(abs(diffA), abs(diffV))
+		grad = max(abs(diffA), abs(diffV), abs(diffF))
 
-		a = a - alpha * diffA  * ecartsA
-		v0 = v0 - alpha * diffV * ecartsV
+		a = a - alpha * diffA
+		v0 = v0 - alpha * diffV
+		dureeFeu = dureeFeu - alpha * diffF
 
 		donnees.append({
 			"a": a,
 			"v0": v0,
+			"dureeFeu": dureeFeu,
 			"ecarts": ecarts,
 			"ecartsA": ecartsA,
 			"ecartsV": ecartsV,
+			"ecartsF": ecartsF,
 			"diffA": diffA,
 			"diffV": diffV,
+			"diffF": diffF,
 			"grad": grad
 		})
 
 		print("Fin itération", i, ":")
 		print("a:", a)
 		print("v0:", v0)
+		print("dureeFeu:", dureeFeu)
 		print("grad:", grad)
 		print("ecarts:", ecarts)
 		print("ecartsA:", ecartsA)
 		print("ecartsV:", ecartsV)
+		print("ecartsF:", ecartsF)
 		print("diffA:", diffA)
 		print("diffV:", diffV)
+		print("diffF:", diffF)
 		print("max grad:", abs(grad))
 
 
 		fichier = open(fichierSauvegardeTemporaire, "a")
 
-		ligne = [a, v0, ecarts, ecartsA, ecartsV, grad, diffA, diffV]
+		ligne = [a, v0, dureeFeu, ecarts, ecartsA, ecartsV, ecartsF, grad, diffA, diffV, diffF]
 		ligne = [str(ligne[i]) for i in range(len(ligne))]
 
 		fichier.write(",".join(ligne) + "\n")
@@ -149,15 +176,16 @@ def optimisation(epsilon, h, alpha=0.1):
 
 	return donnees
 
-donnees = optimisation(0.4, 10**-13, 10**-8)
+donnees = optimisation(0.4, 10**-10, 10**-4)
 
 fichier = open("donneesOptimisations.csv", "w")
 
 for i in range(len(donnees)):
 	donnee = donnees[i]
 
-	ligne = [donnee["a"], donnee["v0"], donnee["ecarts"], donnee["ecartsA"],
-		donnee["ecartsV"], donnee["grad"], donnee["diffA"], donnee["diffV"]]
+	ligne = [donnee["a"], donnee["v0"], donnee["dureeFeu"], donnee["ecarts"], donnee["ecartsA"],
+		donnee["ecartsV"], donnee["ecartsF"], donnee["grad"], donnee["diffA"], donnee["diffV"],
+		donnee["diffF"]]
 	ligne = [str(ligne[i]) for i in range(len(ligne))]
 
 	texteLigne = ",".join(ligne) + "\n"

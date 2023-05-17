@@ -240,7 +240,7 @@ def simulation(voitures: list, temps: Temps):
 
 
 FEUX_DEFAUT = [
-	creeFeu(0, 40, 20, 3),
+	creeFeu(0, 40, 26, 3),
 	# creeFeu(1, DIST_MAX / 2, 20, 2),
 	# creeFeu(2, 3 * DIST_MAX / 4, 20, 2),
 ]

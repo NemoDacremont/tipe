@@ -17,7 +17,7 @@ echelon = 0.5  # Une voiture toutes les 2 sec
 
 # donneesVoitures, donneesFeux = simulationEchelon(echelon, temps, V0, T, A, B,
 # 	DELTA, L, S0, S1, PHYSIQUE, DIST_MAX)
-N = 4
+N = 10
 debits = lireFichierDebit("./debitVehicule/Strasbourg_P1")[:N + 1]
 vitesses = lireFichierVitesse("./vitesseVehicule/Strasbourg_P1")[:N + 1]
 donneesVoitures, donneesFeux = simulationRue(debits, V0, T, A, B,

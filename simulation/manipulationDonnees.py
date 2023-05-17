@@ -165,7 +165,7 @@ def extraitVitesseMoyenne(donneesVoitures, deltaT: float, dt=DT):
 	nombreParties = int(len(donneesVoitures) * dt / deltaT)
 	taillePartie = int(len(donneesVoitures) / nombreParties)
 	vitessesMoyennes = [0 for _ in range(nombreParties)]
-	print(taillePartie, nombreParties)
+	# print(taillePartie, nombreParties)
 
 	for i in range(nombreParties):
 		N = 0
