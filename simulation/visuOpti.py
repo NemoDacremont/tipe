@@ -14,6 +14,7 @@ def extraitAttribut(donnees, attribut: str):
 	return out 
 
 
+
 def afficheGraphe(donnees, attribut: str):
 	colonne = extraitAttribut(donnees, attribut)
 
@@ -73,6 +74,17 @@ def ouvreCSV(cheminFichier: str, ID_entete=None, separateur=',', exclude_col={})
 	return out
 
 
+def sauvegardeVitesseCSV(cheminFichier: str, vitesses: list):
+	fichier = open(cheminFichier, "w")
+
+	for vitesse in vitesses:
+		fichier.write(vitesse)
+
+	fichier.close()
+
+
+
+
 
 
 nomFichier = "donneesOptimisations.csv"
@@ -81,16 +93,12 @@ if len(sys.argv) > 1:
 	nomFichier = sys.argv[1]
 
 
-graphes = ["ecarts", "a", "dureeFeu"]
+graphes = []
 donnees = ouvreCSV(nomFichier)
 
 ecarts = extraitAttribut(donnees, "ecarts")
-v0 = extraitAttribut(donnees, "v0")
 a = extraitAttribut(donnees, "a")
 dureeFeu = extraitAttribut(donnees, "dureeFeu")
-diffA = extraitAttribut(donnees, "diffA")
-diffF = extraitAttribut(donnees, "diffF")
-# ecarts = extraitAttribut(donnees, "ecarts")
 
 for attribut in graphes:
 	afficheGraphe(donnees, attribut)
@@ -113,45 +121,47 @@ for attribut in graphes:
 # plt.legend()
 
 
-plt.figure()
+NA = 100 # int((maxiA - miniA) / pasA)
+NF = 100 # int((maxiF - miniF) / pasF)
 
-miniA = min(a)
-maxiA = max(a)
-miniF = min(dureeFeu)
-maxiF = max(dureeFeu)
+miniA = 1.5  # min(a)
+maxiA = 4  # max(a)
+miniF = 20  # min(dureeFeu)
+maxiF = 40  # max(dureeFeu)
 
+pasA = (maxiA - miniA) / 100
+pasF = (maxiF - miniF) / 100
 
-pasA = min([abs(a[i + 1] - a[i]) for i in range(len(a) - 1)])
-pasF = min([abs(dureeFeu[i + 1] - dureeFeu[i]) for i in range(len(dureeFeu) - 1)])
+Z = [[-np.inf for _ in range(NA)] for _ in range(NF)]
 
-
-NA = int((maxiA - miniA) / pasA)
-NF = int((maxiF - miniF) / pasF)
-
-
-# print(miniA)
-# print(maxiA)
-# print(pasA)
-# print(NA)
-# input()
-
-# Z = [[-np.inf for _ in range(NF)] for _ in range(NA)][-10:]
-#
-# for k in range(len(a)):
-# 	i = int((a[k] - miniA) / pasA) - 1
-# 	j = int((dureeFeu[k] - miniF) / pasF) - 1
-#
-# 	# print(i, j)
-# 	# print(len(Z), len(Z[0]))
-#
-# 	Z[i][j] = ecarts[k]
+print(miniA, maxiA, pasA)
+print(miniF, maxiF, pasF)
 
 
+for k in range(len(a)):
+	print("fait:", k, "/", len(a))
+	i = int(np.round((dureeFeu[k] - miniF) / pasF))
+	j = int(np.round((a[k] - miniA) / pasA))
+
+	print(a[k], dureeFeu[k], np.log(ecarts[k]))
+	print((a[k] - miniA) / pasA, (dureeFeu[k] - miniF) / pasF)
+	print(i, j)
+	print(len(Z), len(Z[0]))
+
+	Z[i][j] = np.log(ecarts[k])
+
+print("Début affichage")
 
 # plt.imshow(Z, cmap="turbo", interpolation='none', extent=(np.amin(a), np.amax(a), np.amin(dureeFeu), np.amax(dureeFeu)), aspect = 'auto')
-plt.quiver(a, dureeFeu, diffA, diffF, color="r")
+
+plt.figure()
 
 plt.title("grad en fonction de a, dureeFeu")
+
+plt.imshow(Z, cmap="hot", interpolation='none', extent=(miniA, maxiA, miniF, maxiF), aspect = 'auto')
+plt.colorbar()
+# plt.quiver(a, dureeFeu, diffA, diffF, color="r")
+
 # plt.imshow(pts, interpolation='none', aspect=0.01, origin="lower")  # , extent=[1, 2, 25, 30])
 # ax = plt.gca()
 

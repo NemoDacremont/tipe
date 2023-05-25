@@ -30,7 +30,7 @@ DIST_MAX = 245
 DUREE_FEU = 26
 
 
-N = 4
+N = 8
 
 def somme(L: list):
 	"""
@@ -56,14 +56,14 @@ def calculeEcart(a, dureeFeu):
 	return ecarts
 
 
-debutA = 1.5
-finA = 2.5
-NA = 20  # nombre de points
+debutA = 2.0
+finA = 2.7
+NA = 10  # nombre de points
 pasA = (finA - debutA) / NA
 
-debutF = 25
-finF = 30
-NF = 20  # nombre de points
+debutF = 28
+finF = 36
+NF = 10  # nombre de points
 pasF = (finF - debutF) / NF
 
 
@@ -78,8 +78,7 @@ vitesses = lireFichierVitesse("./vitesseVehicule/Strasbourg_P1")[:N]
 fichierSauvegardeTemporaire = "tmp.csv"
 
 # Ajoute l'entête du fichier temporaire
-entete = ["a", "v0", "dureeFeu", "ecarts", "ecartsA", "ecartsV", "ecartsF",
-	"grad", "diffA", "diffV", "diffF"]
+entete = ["a", "dureeFeu", "ecarts"]
 
 entete = ",".join(entete) + "\n"
 

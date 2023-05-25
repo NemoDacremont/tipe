@@ -26,7 +26,7 @@ def lireFichierDebit(nomFichier: str, separateur=';') -> list[float]:
 
 
 	for ligne in lignes:
-		valeurs = ligne.replace("\n", "").split(";")
+		valeurs = ligne.replace("\n", "").split(separateur)
 		_, debit = valeurs
 
 		debits.append(float(debit) / 3600)
@@ -47,7 +47,7 @@ def lireFichierVitesse(nomFichier: str, separateur=';') -> list[float]:
 
 
 	for ligne in lignes:
-		valeurs = ligne.replace("\n", "").split(";")
+		valeurs = ligne.replace("\n", "").split(separateur)
 		_, vitesse = valeurs
 
 		vitesses.append(float(vitesse))
@@ -109,19 +109,16 @@ def metAJourFeu(feu: dict, dt: float) -> None:
 		if feu["tempsRestant"] <= 0:
 			feu["tempsRestant"] = feu["dureeOrange"]
 			feu["etat"] = "orange"
-			# print("feu passe au orange")
 
 	if feu["etat"] == "orange":
 		if feu["tempsRestant"] <= 0:
 			feu["tempsRestant"] = feu["periode"]
 			feu["etat"] = "rouge"
-			# print("feu passe au rouge")
 
 	if feu["etat"] == "rouge":
 		if feu["tempsRestant"] <= 0:
 			feu["tempsRestant"] = feu["periode"]
 			feu["etat"] = "vert"
-			# print("feu passe au vert")
 
 
 
@@ -139,7 +136,7 @@ def metAJourAcceleration(voitures: list, feux: list, alpha: int) -> None:
 	# On récupère les données pour plus de lisibilité
 	a, v_0, delta = voiture["a"], voiture["v_0"], voiture["delta"]
 	s_0, s_1, T, b = voiture["s_0"], voiture["s_1"], voiture["T"], voiture["b"]
-	x, vx, ax, s_star = physique["x"], physique["vx"], physique["ax"], physique["s_star"]
+	x, vx = physique["x"], physique["vx"]
 
 
 	# Si la voiture en suit une autre
@@ -155,12 +152,7 @@ def metAJourAcceleration(voitures: list, feux: list, alpha: int) -> None:
 		delta_v = 0
 		s_alpha = +np.infty
 
-		# # On recalcule s_star dans un premier temps
-		# physique["s_star"] = s_0 + s_1 * np.sqrt(abs(vx / v_0)) + T * vx
-		#
-		# # On peut alors calculer l'accélération
-		# voiture["physique"]["ax"] = a * (1 - (vx / v_0)**delta)
-
+	# On teste si la voiture est derrière un feu
 	for feu in feux:
 		if feu["etat"] == "rouge" or feu["etat"] == "orange":
 			# si les conditions sont respectées,
@@ -171,13 +163,9 @@ def metAJourAcceleration(voitures: list, feux: list, alpha: int) -> None:
 					delta_v = 0 - vx  # la vitesse du véhicule virtuel est nulle
 					s_alpha = feu["position"] - x - voiture["l"]
 
-
-	# if voiture["ID"] == 5:
-	# 	# print("deltav, s_alpha:", delta_v, voitures[alpha - 1]["physique"]["vx"] - vx, s_alpha)
 	# On recalcule s_star dans un premier temps
 	if s_alpha < 10**-6:
 		s_alpha = 10**-6
-	
 
 	physique["s_star"] = s_0 + s_1 * np.sqrt(vx / v_0) + T * vx + (vx * delta_v) / (2 * np.sqrt(a * b))
 
@@ -197,30 +185,9 @@ def metAJourVoiture(voitures, feux: list, alpha: int, dt: float) -> None:
 	metAJourAcceleration(voitures, feux, alpha)
 	dv = physique["ax"] * dt
 	physique["vx"] = max(0, physique["vx"] + dv)
-	# if voiture["ID"] == 5:
-	# 	# print("a, v, s_star:", physique["ax"], physique["vx"], physique["s_star"])
 
 	dx = physique["vx"] * dt
 	physique["x"] += dx
-
-	# Runge-Kutta ordre 2
-	# dt /= 2
-	# ax = physique["ax"]
-	# vx = physique["vx"]
-	#
-	# metAJourAcceleration(voitures, feux, alpha)
-	# dv1 = physique["ax"] * dt
-	# dx1 = (physique["vx"] + dv1) * dt
-	# physique["vx"] += dv1
-	# physique["x"] += dx1
-	#
-	# metAJourAcceleration(voitures, feux, alpha)
-	# dv2 = physique["ax"] * dt
-	# dx2 = (physique["vx"] + dv2) * dt
-	#
-	#
-	# physique["vx"] += (dv1 + dv2) * dt / 2
-	# physique["x"] += dx2
 
 
 def simulation(voitures: list, temps: Temps):
@@ -240,7 +207,7 @@ def simulation(voitures: list, temps: Temps):
 
 
 FEUX_DEFAUT = [
-	creeFeu(0, 40, 26, 3),
+	creeFeu(0, 40, 27, 2),
 	# creeFeu(1, DIST_MAX / 2, 20, 2),
 	# creeFeu(2, 3 * DIST_MAX / 4, 20, 2),
 ]
@@ -248,7 +215,8 @@ FEUX_DEFAUT = [
 
 def simulationEchelon(valeurEchelon: float, temps: Temps, v_0: float, T: float,
 		a: float, b: float, delta: int, l: float, s_0: float, s_1: float,
-		physique=PHYSIQUE_DEFAUT, distMax=1000, voituresDebut=[], feux=FEUX_DEFAUT):
+		physique=PHYSIQUE_DEFAUT, distMax=DIST_MAX, voituresDebut=[], feux=FEUX_DEFAUT,
+		timerVoitureInit=0):
 	"""
 		Simule une ligne droite par un échelon du flux de voiture
 		Les voitures se déplacent sur un segment de 0 à distMax, au delà, elles sont
@@ -263,10 +231,9 @@ def simulationEchelon(valeurEchelon: float, temps: Temps, v_0: float, T: float,
 	voitures = voituresDebut
 	donneesVoitures = []
 	donneesFeux = []
-	timerVoiture = 0
+	timerVoiture = timerVoitureInit
 
 	dt = temps[1] - temps[0]
-	timerVoiture = 0
 
 	ID = 0
 	if len(voitures) > 0:
@@ -287,11 +254,7 @@ def simulationEchelon(valeurEchelon: float, temps: Temps, v_0: float, T: float,
 			physiqueVoiture = copy(physique)
 			if len(voitures) > 0:
 				x0 = min(voitures[-1]["physique"]["x"] - 2 * s_0, 0)
-				# v0 = voitures[-1]["physique"]["vx"] / 2
 				v0 = 0
-
-				# print(f"x0: {x0}")
-				# print(f"v0: {v0}")
 
 				physiqueVoiture["x"] = x0
 				physiqueVoiture["vx"] = v0
@@ -299,13 +262,9 @@ def simulationEchelon(valeurEchelon: float, temps: Temps, v_0: float, T: float,
 			nouvelleVoiture = creeVoiture(ID, v_0, T, a, b, delta, l, s_0, s_1,
 				physiqueVoiture, voitureSuivie)
 			voitures.append(nouvelleVoiture)
-			# # print("création voiture", ID)
-			# # print("nouvelleVoiture x:", nouvelleVoiture["physique"]["x"])
-			# # print("elle suit la voiture", voitureSuivie)
 			ID += 1
 
 
-		# Deepcopy est nécessaire pour sauvegarder les voitures qui sont des dico
 		copieVoiture = deepcopy(voitures)
 		copieFeux = deepcopy(feux)
 
@@ -329,7 +288,6 @@ def simulationEchelon(valeurEchelon: float, temps: Temps, v_0: float, T: float,
 		for alpha in range(len(voitures) - 1, -1, -1):
 			voiture = voitures[alpha]
 			if voiture["physique"]["x"] >= distMax:
-				# print("retire voiture ID:", voiture["ID"])
 				voitures.pop(alpha)
 
 
@@ -337,7 +295,7 @@ def simulationEchelon(valeurEchelon: float, temps: Temps, v_0: float, T: float,
 
 
 def simulationRue(debitRue: list[float], v_0: float, T: float, a: float,
-		b: float, delta: int, l: float, s_0: float, s_1: float,
+		b: float, delta: int, l: float, s_0: float, s_1: float, feuxInit=[], voituresInit=[],
 		physique=PHYSIQUE_DEFAUT, distMax=1000, debut=DEBUT, fin=FIN, dt=DT):
 	"""
 		Fait une suite de simulation en échelon durant chacune 1 minute où avec
@@ -349,9 +307,12 @@ def simulationRue(debitRue: list[float], v_0: float, T: float, a: float,
 		]
 	"""
 	donneesVoitures = []
-	donneesFeux = []
-	voitures = []
-	feux = FEUX_DEFAUT
+	donneesFeux = [] 
+	voitures = voituresInit
+
+	feux = feuxInit
+	if feuxInit == []:
+		feux = FEUX_DEFAUT
 
 	for i in range(len(debitRue) - 1):
 		debit = debitRue[i + 1]  # la moyenne des temps à simulée est en i+1

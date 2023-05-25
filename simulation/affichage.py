@@ -1,6 +1,8 @@
 
+
 import matplotlib.pyplot as plt
-from constantes import V0, A, DIST_MAX
+from constantes import V0, A, DIST_MAX, DT
+from manipulationDonnees import extraitVitesseMoyenne1, extraitVitesseMoyenne, moyenneGlissante
 
 
 def afficheVoituresIndividuellement(voitureIDs, tempsVoitures,
@@ -100,6 +102,78 @@ def afficheAccelerationVoitures(voitureIDs, tempsVoitures, donneesPlotVoitures,
 	if legend:
 		plt.legend()
 
+
+def afficheVitessesMoyennes(donneesVoitures, vitessesReelles, dt=DT):
+	nombreParties = int(len(donneesVoitures) * dt / 60)
+	taillePartie = int(len(donneesVoitures) / nombreParties)
+
+	vitessesMoyennes_instants = extraitVitesseMoyenne1(donneesVoitures)
+	# vitessesMoyennes_instants = moyenneGlissante(vitessesMoyennes_instants, 1500)
+
+	indicesVitesse = [i * dt for i in range(len(vitessesMoyennes_instants))]
+
+	plt.figure()
+	plt.title("Vitesse moyenne")
+	plt.plot(indicesVitesse, vitessesMoyennes_instants, "+-", label="Vitesse simulation")
+
+	# / 100 car centisecondes vers secondes
+	indicesVitesse = [(i * taillePartie) / 100 for i in range(len(vitessesReelles))]
+	# vitReelles = moyenneGlissante(vitessesReelles, 15)
+	plt.plot(indicesVitesse, vitessesReelles, "+-", label="Vitesse réelle")
+
+	plt.xlabel("temps (en s)")
+	plt.ylabel("vitesse (en m/s)")
+	plt.legend()
+
+
+def afficheVitessesMoyennesMinutes(donneesVoitures, vitessesReelles, dt=DT):
+	dureeMoyenne = 600
+
+	nombreParties = int(len(donneesVoitures) * dt / dureeMoyenne)
+	taillePartie = int(len(donneesVoitures) / nombreParties)
+
+	vitessesMoyennes_minutes = extraitVitesseMoyenne(donneesVoitures, dureeMoyenne)
+
+	# / 100 car centisecondes vers secondes
+	temps = [(i * taillePartie) / 100 for i in range(nombreParties)]
+
+	plt.figure()
+	plt.title("Vitesse moyenne minutes")
+	plt.plot(temps, vitessesMoyennes_minutes, "+-", label="Vitesse simulation")
+
+
+	dureeMoyenne = 60
+	nombreParties = int(len(donneesVoitures) * dt / dureeMoyenne)
+	taillePartie = int(len(donneesVoitures) / nombreParties)
+
+	indicesVitesse = [(i * taillePartie) / 100 for i in range(nombreParties)]
+	# On affiche à partir de 1 pour faire joli
+	plt.plot(indicesVitesse, vitessesReelles[1:], "+-", label="Vitesse réelle")
+
+	plt.xlabel("temps (en s)")
+	plt.ylabel("vitesses moyennes (en m/s)")
+	plt.legend()
+
+
+def afficheEcartAuReel(donneesVoitures, vitessesReelles, dt=DT):
+	"""
+		Affiche l'écart au réel de la simulation
+	"""
+	nombreParties = int(len(donneesVoitures) * DT / 60)
+	taillePartie = int(len(donneesVoitures) / nombreParties)
+
+	vitessesMoyennes_minutes = extraitVitesseMoyenne(donneesVoitures, 60)
+
+	eps = [vitessesMoyennes_minutes[i] - vitessesReelles[i] for i in range(len(vitessesReelles) - 1)]
+	indicesVitesse = [(i * taillePartie) / 100 for i in range(len(vitessesReelles) - 1)]
+
+	plt.figure()
+	plt.title("Écart Vitesse moyenne minutes")
+	plt.plot(indicesVitesse, eps, label="ecart vitesse")
+
+	plt.xlabel("temps (en sec)")
+	plt.ylabel("Ecart (en m/s)")
+	plt.legend()
 
 
 

@@ -1,103 +1,237 @@
 #!/usr/bin/env python
 
-import matplotlib.pyplot as plt
-from simulation import simulationRue, lireFichierDebit, lireFichierVitesse
+# import matplotlib.pyplot as plt
+from simulation import PHYSIQUE_DEFAUT, simulationRue, lireFichierDebit, lireFichierVitesse
 from constantes import V0, T, A, B, DELTA, L, S0, S1, PHYSIQUE, DIST_MAX, DEBUT, FIN, DT
 from manipulationDonnees import convertiDonneesPlotVoitures, convertiDonneesPlotFeux, \
-	extraitVitesseMoyenne, extraitVitesseMoyenne1, moyenneGlissante
-from affichage import affichePositionVoitures, afficheVitesseVoitures, \
-	afficheAccelerationVoitures, show
+	extraitVitesseMoyenne, extraitVitesseMoyenne1
+from affichage import afficheEcartAuReel, affichePositionVoitures, afficheVitesseVoitures, \
+	afficheAccelerationVoitures, show, afficheVitessesMoyennes, afficheVitessesMoyennesMinutes
+
+import sys
+
+def sauvegardeVitesseCSV(cheminFichier: str, vitesses: list):
+	fichier = open(cheminFichier, "a")
+
+	for vitesse in vitesses:
+		fichier.write(str(vitesse) + "\n")
+
+	fichier.close()
+
+
+def sauvegardeVoitures(cheminFichier: str, voitures, exclude={"etat": True}):
+	fichier = open(cheminFichier, "w")
+
+	entete = []
+	for cle in voitures[0][1]:
+		if cle not in exclude:
+			entete.append(cle)
+
+	fichier.write(",".join(entete) + "\n")
+
+
+	for _, voiture in voitures:
+		ligne = []
+		for cle in entete:
+			if cle == "physique":
+				donnee = []
+				physique = voiture[cle]
+				for clePhysique in physique:
+					donnee.append(f"{clePhysique}:{physique[clePhysique]}")
+
+				ligne.append(";".join(donnee))
+
+			else:
+				ligne.append(voiture[cle])
+
+		ligne = [str(ligne[i]) for i in range(len(ligne))]
+		texte = ",".join(ligne) + "\n"
+
+		fichier.write(texte)
+
+	fichier.close()
+
+
+def lireVoitures(cheminFichier: str):
+	fichier = open(cheminFichier, "r", encoding='utf-8-sig')
+
+	lignes = fichier.readlines()
+	fichier.close()
+
+	if len(lignes) == 0:
+		return []
+
+	voitures = []
+	cles = lignes[0].replace("\n", "").split(",")
+	
+	for i in range(1, len(lignes)):
+		ligne = lignes[i].replace("\n", "")
+		donneesLigne = ligne.split(",")
+
+		voiture = {}
+		for j in range(len(cles)):
+			cle = cles[j]
+
+			if cle == "ID":
+				voiture[cle] = int(donneesLigne[j])
+
+			elif cle == "physique":
+				physique = {}
+				valeurs = donneesLigne[j]
+				paquets = valeurs.split(";")
+
+				for paquet in paquets:
+					clePhysique, valeur = paquet.split(":")
+					physique[clePhysique] = float(valeur)
+
+				voiture[cle] = physique
+
+			else:
+				voiture[cle] = float(donneesLigne[j])
+
+		voitures.append(voiture)
+
+	return voitures
+
+
+def sauvegardeFeux(cheminFichier: str, feux):
+	fichier = open(cheminFichier, "w")
+
+	entete = []
+	for cle in feux[0][1]:
+		entete.append(cle)
+
+	fichier.write(",".join(entete) + "\n")
+
+
+	for _, feu in feux:
+		ligne = []
+		for cle in entete:
+			ligne.append(feu[cle])
+
+		ligne = [str(ligne[i]) for i in range(len(ligne))]
+		texte = ",".join(ligne) + "\n"
+
+		fichier.write(texte)
+
+	fichier.close()
+
+
+def lireFeux(cheminFichier: str):
+	fichier = open(cheminFichier, "r", encoding='utf-8-sig')
+
+	lignes = fichier.readlines()
+	fichier.close()
+
+	if len(lignes) == 0:
+		return []
+
+	feux = []
+	cles = lignes[0].replace("\n", "").split(",")
+	
+	for i in range(1, len(lignes)):
+		ligne = lignes[i].replace("\n", "")
+		donneesLigne = ligne.split(",")
+
+		feu = {}
+		for j in range(len(cles)):
+			cle = cles[j]
+
+			if cle == "etat":
+				feu[cle] = str(donneesLigne[j])
+
+			elif cle == "ID":
+				feu[cle] = int(donneesLigne[j])
+
+			else:
+				feu[cle] = float(donneesLigne[j])
+
+		feux.append(feu)
+
+	return feux
+
+
 
 
 
 # Temps
-
-temps = [DEBUT + DT * i for i in range(int((FIN - DEBUT) / DT))]
+temps = [(DEBUT + DT * i) / 100 for i in range(int((FIN - DEBUT) / DT))]
 echelon = 0.5  # Une voiture toutes les 2 sec
 
-# donneesVoitures, donneesFeux = simulationEchelon(echelon, temps, V0, T, A, B,
-# 	DELTA, L, S0, S1, PHYSIQUE, DIST_MAX)
-N = 10
-debits = lireFichierDebit("./debitVehicule/Strasbourg_P1")[:N + 1]
-vitesses = lireFichierVitesse("./vitesseVehicule/Strasbourg_P1")[:N + 1]
+
+argv = sys.argv
+N_OFFSET = 0
+N = 1
+if len(argv) >= 2:
+	N = int(argv[1])
+
+if len(argv) >= 3:
+	N_OFFSET = int(argv[2])
+
+if N_OFFSET < 0:
+	N_OFFSET = 0
+
+
+debits = lireFichierDebit("./debitVehicule/Strasbourg_P1")
+vitesses = lireFichierVitesse("./vitesseVehicule/Strasbourg_P1")
+
+voituresInit = lireVoitures("./sim_tmp/voitures.csv")
+feuxInit = lireFeux("./sim_tmp/feux.csv")
+
+
+# print(voituresInit)
+# input()
+
+debits = [debits[N_OFFSET + i] for i in range(N + 1)]
+vitesses = [vitesses[N_OFFSET + i] for i in range(N + 1)]
+
+# Simulation
 donneesVoitures, donneesFeux = simulationRue(debits, V0, T, A, B,
-	DELTA, L, S0, S1, PHYSIQUE, DIST_MAX)
+	DELTA, L, S0, S1, physique=PHYSIQUE, distMax=DIST_MAX, voituresInit=voituresInit,
+	feuxInit=feuxInit)
 
 
 # Vitesses moyenne pour chaque instants
 vitessesMoyennes_instants = extraitVitesseMoyenne1(donneesVoitures)
 
 # Vitesses moyenne pour chaque minutes
-vitessesMoyennes_minutes = extraitVitesseMoyenne(donneesVoitures, 60)
-
-
+# vitessesMoyennes_minutes = extraitVitesseMoyenne(donneesVoitures, 60)
 
 voitureIDs, tempsVoitures, donneesPlotVoitures = convertiDonneesPlotVoitures(donneesVoitures)
 feuIDs, tempsFeux, donneesPlotFeux = convertiDonneesPlotFeux(donneesFeux)
 
-# print(donneesPlotVoitures.keys())
+sauvegardeVitesseCSV("vitesses.csv", vitessesMoyennes_instants)
+sauvegardeVoitures("./sim_tmp/voitures.csv", donneesVoitures[-1])
+sauvegardeFeux("./sim_tmp/feux.csv", donneesFeux[-1])
 
-# Affichage
-# Affichage pour les n premières voitures
-# Affichage pour les n premiers feux
 
-# Affichage pour toutes les voitures
-# Affichage position
+"""
+###
+### Affichage
+###
+# Affichage position des voitures dans le temps
 affichePositionVoitures(voitureIDs, tempsVoitures, donneesPlotVoitures)
+
 
 # Affichage vitesse
 afficheVitesseVoitures(voitureIDs, tempsVoitures, donneesPlotVoitures)
 
+
 # Affichage accélération
 afficheAccelerationVoitures(voitureIDs, tempsVoitures, donneesPlotVoitures)
 
-# Affiche la vitesse moyenne des segments
 
-nombreParties = int(len(donneesVoitures) * DT / 60)
-taillePartie = int(len(donneesVoitures) / nombreParties)
-
-plt.figure()
-plt.title("Vitesse moyenne")
-plt.plot(vitessesMoyennes_instants, label="Vitesse simulation")
-
-indicesVitesse = [i * taillePartie for i in range(len(vitesses))]
-plt.plot(indicesVitesse, vitesses, label="Vitesse réelle")
-
-plt.legend()
-
-plt.xlabel("temps (en sec)")
-
-###
-indicesVitesse = [i * taillePartie for i in range(len(vitesses) - 1)]
-
-plt.figure()
-plt.title("Vitesse moyenne minutes")
-plt.plot(indicesVitesse, vitessesMoyennes_minutes, label="Vitesse simulation")
-
-indicesVitesse = [i * taillePartie for i in range(len(vitesses) - 1)]
-plt.plot(indicesVitesse, vitesses[1:], label="Vitesse réelle")
-
-plt.xlabel("temps (en sec)")
-plt.legend()
+# Vitesse moyenne des voitures à chaque instant et la vitesse réelle
+afficheVitessesMoyennes(donneesVoitures, vitesses)
 
 
-# Affichage écart
-eps = [vitessesMoyennes_minutes[i] - vitesses[i] for i in range(len(vitesses) - 1)]
-# eps2 = [(vitessesMoyennes_minutes[i] - vitesses[i])**2 for i in range(len(vitesses))]
-indicesVitesse = [i * taillePartie for i in range(len(vitesses) - 1)]
+# Vitesse moyenne à chaque minute des voitures et la vitesse réelle
+afficheVitessesMoyennesMinutes(donneesVoitures, vitesses)
 
-plt.figure()
-plt.title("Écart Vitesse moyenne minutes")
-plt.plot(indicesVitesse, eps, label="ecart vitesse")
-# plt.plot(indicesVitesse, eps2, label="ecart type")
-
-plt.xlabel("temps (en sec)")
-plt.legend()
-
-# print(eps2)
+# Ecart à chaque minute au réel
+afficheEcartAuReel(donneesVoitures, vitesses, DT)
 
 
-# plt.plot(debits)
-
-# Affichage position
 show()
+"""
+

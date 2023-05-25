@@ -50,6 +50,7 @@ def convertiDonneesPlotVoitures(donneesVoitures):
 		"ax": {},
 		"s_star": {}
 	}
+
 	for j in range(len(donneesVoitures)):
 		# donneesPlotVoitures["x"].append([])
 		# donneesPlotVoitures["vx"].append([])
@@ -142,7 +143,7 @@ def extraitVitesseMoyenne1(donneesVoitures):
 	"""
 		Retourne la vitesse moyenne pour les temps i * deltaT, i un entier
 	"""
-	vitessesMoyennes = [0 for _ in range(len(donneesVoitures))]
+	vitessesMoyennes = [0.0 for _ in range(len(donneesVoitures))]
 
 	for i in range(len(donneesVoitures)):
 		N = 0
@@ -164,7 +165,7 @@ def extraitVitesseMoyenne(donneesVoitures, deltaT: float, dt=DT):
 	"""
 	nombreParties = int(len(donneesVoitures) * dt / deltaT)
 	taillePartie = int(len(donneesVoitures) / nombreParties)
-	vitessesMoyennes = [0 for _ in range(nombreParties)]
+	vitessesMoyennes = [0.0 for _ in range(nombreParties)]
 	# print(taillePartie, nombreParties)
 
 	for i in range(nombreParties):
@@ -177,7 +178,7 @@ def extraitVitesseMoyenne(donneesVoitures, deltaT: float, dt=DT):
 				vitessesMoyennes[i] += vx * 3.6
 				N += 1
 
-		vitessesMoyennes[i] /= N
+		vitessesMoyennes[i] = vitessesMoyennes[i] / N
 
 	return vitessesMoyennes
 
