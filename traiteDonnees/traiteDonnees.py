@@ -4,18 +4,32 @@ import os
 
 
 def ouvreCSV(cheminFichier: str, ID_entete="Identifiant", separateur=',', exclude_col={}):
+	"""
+		Renvoie sous la forme d'un dictionnaire de dictionnaire le contenu du fichier
+		cheminFichier au format CSV
+
+		
+		ex:
+		id_entete_i correspond à un exemple de valeur correspondant à ID_entete
+
+		return {
+			id_entete_1: { donnees_1 },
+			id_entete_2: { donnees_2 },
+			id_entete_3: { donnees_3 },
+		}
+	"""
+	# Extrait entête et lignes
 	fichier = open(cheminFichier, 'r', encoding='utf-8-sig')  # Cet encodage retire les BOM
 
 	lignes = fichier.readlines()
 	entete = lignes[0].replace("\n", "").split(separateur)
-	# print(entete)
 
 	fichier.close()
 
-	# Stocke sous la forme d'un dictionnaire pour accélérer l'accès aux données
+	# Stocke sous la forme d'un dictionnaire pour accélérer l'accès aux données et aux recherches
 	out = {}
 
-	for i in range(1, len(lignes)):
+	for i in range(1, len(lignes)):  # On exclue l'entête
 		ligne = lignes[i].replace("\n", "")
 		els = ligne.split(separateur)
 
@@ -30,6 +44,18 @@ def ouvreCSV(cheminFichier: str, ID_entete="Identifiant", separateur=',', exclud
 
 
 def readSegment(nomSegment: str, dossierDonnees="donnees"):
+	"""
+		Retourne les données d'un segment sous la forme d'une liste de dictionnaires
+
+		ex: [
+			{ "Nom du tronçon": nomSegment, "Horodatage": h1, ... },
+			{ "Nom du tronçon": nomSegment, "Horodatage": h2, ... },
+			{ "Nom du tronçon": nomSegment, "Horodatage": h3, ... },
+			{ "Nom du tronçon": nomSegment, "Horodatage": h4, ... },
+			{ "Nom du tronçon": nomSegment, "Horodatage": h5, ... },
+		]
+
+	"""
 	nomFichiers = os.listdir(dossierDonnees)
 
 	donnees = []
@@ -45,8 +71,6 @@ def readSegment(nomSegment: str, dossierDonnees="donnees"):
 		except Exception as e:
 			print(f"n'a pas pu lire le fichier {chemin}: {e}")
 
-
-	# print(f"nb donnees: {len(donnees)}")
 	return donnees
 
 
@@ -74,6 +98,9 @@ def convertionHeure(heure: str):
 
 
 def moyenneGlissante(data: list[int | float], n: int):
+	"""
+		Moyenne glissante sur n valeurs
+	"""
 	out: list[float] = [0 for _ in data]
 	out[0] = data[0]
 
@@ -91,14 +118,23 @@ def moyenneGlissante(data: list[int | float], n: int):
 	return out
 
 
-def readSauvegarde(cheminFichier: str, separateur=";"):
+def readSauvegarde(cheminFichier: str, separateur=";") -> list:
+	"""
+		Lit un fichier 
+	"""
 	donnees = []
+
+	# extrait les lignes et l'entête
 	fichier = open(cheminFichier, "r")
 
 	lignesFichier = fichier.readlines()
 
+	fichier.close()
+
+	# Entête
 	entete = lignesFichier[0].replace("\n", "").split(separateur)
 
+	# donnees en excluant l'entête
 	for i in range(1, len(lignesFichier)):
 		ligneFichier = lignesFichier[i].replace("\n", "")
 		ligne = {}
@@ -115,18 +151,6 @@ def readSauvegarde(cheminFichier: str, separateur=";"):
 def extraitDonneesAvecMoyenne(donneesSegment, colonne: str) -> tuple[list[float], list[float]]:
 	"""
 	"""
-	def triInstants(liste):
-		"""
-		Tri bulle
-		"""
-		for i in range(len(liste)):
-			for j in range(len(liste) - 1 - i):
-				if liste[j][0] > liste[j + 1][0]:
-					c = liste[j + 1]
-					liste[j + 1] = liste[j]
-					liste[j] = c
-
-
 	tmpVals = {}  # moyenne des donnéees pour chaque instants de la journée
 	tmpCompte = {}  # Compte du nombre de données par instants
 
@@ -155,8 +179,7 @@ def extraitDonneesAvecMoyenne(donneesSegment, colonne: str) -> tuple[list[float]
 
 
 	jsp = [(temps[i], vals[i]) for i in range(len(temps))]
-	# triInstants(jsp)
-	jsp.sort()
+	jsp.sort()  # tri rapide lexicographique
 
 	temps, vals = [], []
 	for i in range(len(jsp)):

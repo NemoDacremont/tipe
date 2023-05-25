@@ -10,7 +10,7 @@ def afficheDebit(fichier: str):
 	# print("longueurSegment", longueurSegment)
 
 	temps, valDebit = extraitDonneesAvecMoyenne(donnees, "Vitesse")
-	# valDebitFiltree = moyenneGlissante(valDebit, 10)
+	valDebitFiltree = moyenneGlissante(valDebit, 15)
 
 	# Moyenne non filtrée
 	plt.figure()
@@ -21,36 +21,34 @@ def afficheDebit(fichier: str):
 	plt.xlabel("instant (heure.min)")
 	plt.ylabel("débit (voitures/s)")
 
+	# Moyenne Filtrée
+	plt.figure()
+
+	plt.title("Débit instantané moyen filtré en fonction du temps")
+	plt.plot(temps, valDebitFiltree)
+
 	plt.show()
 
-	# Moyenne Filtrée
-	# plt.figure()
-	#
-	# plt.title("Débit instantané moyen filtré en fonction du temps")
-	# plt.plot(temps, valDebitFiltree)
-	#
-	# plt.show()
 
-
-def getVitesse(fichier: str, heure: int):
+def getVitesse(fichier: str, heureDebut: float, heureFin: float):
 	donnees = readSauvegarde(fichier)
 	temps, valDebit = extraitDonneesAvecMoyenne(donnees, "Vitesse")
 
 	out = []
 	for i in range(len(temps)):
-		if temps[i] < heure + 1 and temps[i] >= heure:
+		if temps[i] < heureFin and temps[i] >= heureDebut:
 			out.append((temps[i], valDebit[i]))
 
 	return out
 
 
-def getDebit(fichier: str, heure: int):
+def getDebit(fichier: str, heureDebut: float, heureFin: float):
 	donnees = readSauvegarde(fichier)
 	temps, valDebit = extraitDonneesAvecMoyenne(donnees, "Débit")
 
 	out = []
 	for i in range(len(temps)):
-		if temps[i] < heure + 1 and temps[i] >= heure:
+		if temps[i] < heureFin and temps[i] >= heureDebut:
 			out.append((temps[i], valDebit[i]))
 
 	return out
@@ -87,9 +85,12 @@ def extrait(segment):
 	print(nomFichierSauvegarde, "écrit!")
 
 
-afficheDebit("./sousDonnees/Allende_I2")
+afficheDebit("./sousDonnees/Strasbourg_P1")
+input()
 
 
+
+# Extrait les débits et les vitesses réelles
 N = 3
 nomRue = "Strasbourg"
 prefixes = ["I", "P"]
@@ -102,8 +103,8 @@ for prefixe in prefixes:
 			nomFichierSauvegardeVitesse = f"./vitesseVehicule/{nomRue}_{prefixe}{k + 1}"
 			nomFichierSauvegardeDebit = f"./debitVehicule/{nomRue}_{prefixe}{k + 1}"
 
-			vitesses = getVitesse(nomFichierLecture, 17)
-			debits = getDebit(nomFichierLecture, 17)
+			vitesses = getVitesse(nomFichierLecture, 15.5, 21)
+			debits = getDebit(nomFichierLecture, 15.5, 21)
 
 			lignesVitesses = []
 			for i in range(len(vitesses)):
