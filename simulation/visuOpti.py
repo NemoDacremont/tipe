@@ -16,6 +16,9 @@ def extraitAttribut(donnees, attribut: str):
 
 
 def afficheGraphe(donnees, attribut: str):
+	"""
+		Affiche 
+	"""
 	colonne = extraitAttribut(donnees, attribut)
 
 	plt.figure()
@@ -88,9 +91,13 @@ def sauvegardeVitesseCSV(cheminFichier: str, vitesses: list):
 
 
 nomFichier = "donneesOptimisations.csv"
+methode = ""
 
 if len(sys.argv) > 1:
 	nomFichier = sys.argv[1]
+
+if len(sys.argv) > 2:
+	methode = sys.argv[2]
 
 
 graphes = []
@@ -156,7 +163,7 @@ print("Début affichage")
 
 plt.figure()
 
-plt.title("grad en fonction de a, dureeFeu")
+plt.title("log(Ecart) en fonction de a, dureeFeu")
 
 plt.imshow(Z, cmap="hot", interpolation='none', extent=(miniA, maxiA, miniF, maxiF), aspect = 'auto')
 plt.colorbar()

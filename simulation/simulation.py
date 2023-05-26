@@ -90,13 +90,15 @@ def creeVoiture(ID: int, v_0: float, T: float, a: float, b: float, delta: int, l
 	}
 
 
-def creeFeu(id: int, position: float, periode: float, dureeOrange: float) -> dict:
+def creeFeu(id: int, position: float, dureeVert: float, dureeRouge: float, dureeOrange: float) -> dict:
 	feu = {
 		"ID": id,
 		"position": position,
-		"periode": periode,
+		# "periode": periode,
+		"dureeVert": dureeVert,
+		"dureeRouge": dureeRouge,
 		"dureeOrange": dureeOrange,
-		"tempsRestant": periode,
+		"tempsRestant": dureeVert,
 		"etat": "vert"
 	}
 
@@ -112,12 +114,12 @@ def metAJourFeu(feu: dict, dt: float) -> None:
 
 	if feu["etat"] == "orange":
 		if feu["tempsRestant"] <= 0:
-			feu["tempsRestant"] = feu["periode"]
+			feu["tempsRestant"] = feu["dureeRouge"]
 			feu["etat"] = "rouge"
 
 	if feu["etat"] == "rouge":
 		if feu["tempsRestant"] <= 0:
-			feu["tempsRestant"] = feu["periode"]
+			feu["tempsRestant"] = feu["dureeVert"]
 			feu["etat"] = "vert"
 
 
@@ -207,7 +209,7 @@ def simulation(voitures: list, temps: Temps):
 
 
 FEUX_DEFAUT = [
-	creeFeu(0, 40, 27, 2),
+	creeFeu(0, 40, 27, 25, 2),
 	# creeFeu(1, DIST_MAX / 2, 20, 2),
 	# creeFeu(2, 3 * DIST_MAX / 4, 20, 2),
 ]

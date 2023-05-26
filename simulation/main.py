@@ -162,21 +162,27 @@ echelon = 0.5  # Une voiture toutes les 2 sec
 argv = sys.argv
 N_OFFSET = 0
 N = 1
+a = A
 if len(argv) >= 2:
 	N = int(argv[1])
 
 if len(argv) >= 3:
 	N_OFFSET = int(argv[2])
 
+if len(argv) >= 4:
+	a = float(argv[3])
+
 if N_OFFSET < 0:
 	N_OFFSET = 0
 
 
+
+print(a)
 debits = lireFichierDebit("./debitVehicule/Strasbourg_P1")
 vitesses = lireFichierVitesse("./vitesseVehicule/Strasbourg_P1")
 
-voituresInit = lireVoitures("./sim_tmp/voitures.csv")
-feuxInit = lireFeux("./sim_tmp/feux.csv")
+voituresInit = lireVoitures(f"./sim_tmp/voitures{a}.csv")
+feuxInit = lireFeux(f"./sim_tmp/feux{a}.csv")
 
 
 # print(voituresInit)
@@ -186,7 +192,7 @@ debits = [debits[N_OFFSET + i] for i in range(N + 1)]
 vitesses = [vitesses[N_OFFSET + i] for i in range(N + 1)]
 
 # Simulation
-donneesVoitures, donneesFeux = simulationRue(debits, V0, T, A, B,
+donneesVoitures, donneesFeux = simulationRue(debits, V0, T, a, B,
 	DELTA, L, S0, S1, physique=PHYSIQUE, distMax=DIST_MAX, voituresInit=voituresInit,
 	feuxInit=feuxInit)
 
@@ -200,9 +206,9 @@ vitessesMoyennes_instants = extraitVitesseMoyenne1(donneesVoitures)
 voitureIDs, tempsVoitures, donneesPlotVoitures = convertiDonneesPlotVoitures(donneesVoitures)
 feuIDs, tempsFeux, donneesPlotFeux = convertiDonneesPlotFeux(donneesFeux)
 
-sauvegardeVitesseCSV("vitesses.csv", vitessesMoyennes_instants)
-sauvegardeVoitures("./sim_tmp/voitures.csv", donneesVoitures[-1])
-sauvegardeFeux("./sim_tmp/feux.csv", donneesFeux[-1])
+sauvegardeVitesseCSV(f"./vitessesSimulees/vitesses{a}.csv", vitessesMoyennes_instants)
+sauvegardeVoitures(f"./sim_tmp/voitures{a}.csv", donneesVoitures[-1])
+sauvegardeFeux(f"./sim_tmp/feux{a}.csv", donneesFeux[-1])
 
 
 """

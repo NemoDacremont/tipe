@@ -45,7 +45,7 @@ def somme(L: list):
 
 def calculeEcart(a, dureeFeu):
 	feux = [
-		creeFeu(0, 40, dureeFeu, 3)
+		creeFeu(0, 40, 27, 25, 2)
 	]
 
 	donneesVoitures, _ = simulationOptimisation(debits, V0, T, a, B, DELTA, L, S0, S1, PHYSIQUE, DIST_MAX, feux=feux)
