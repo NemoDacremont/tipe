@@ -74,10 +74,30 @@ def readSegment(nomSegment: str, dossierDonnees="donnees"):
 	return donnees
 
 
+def extraitHorodatage(heure: str):
+	"""
+		converti une heure au format 2023-01-26T12:39:00+01:00
+		en une heure au 
+	"""
+	date, p1 = heure.split("T")
+
+	annee, mois, jour = date.split("-")
+	h, m, _, _ = p1.split(":")
+
+	horodatage = {
+		"annee": int(annee),
+		"mois": int(mois),
+		"jour": int(jour),
+		"m": int(m),
+		"h": int(h),
+	}
+	return horodatage
+
+
 def tronqueHeure(heure: str):
 	"""
 		converti une heure au format 2023-01-26T12:39:00+01:00
-		en une heure au format HH:mm
+		retourne (heure, minute) au format d'un tuple d'entiers
 	"""
 	_, p1 = heure.split("T")
 	h, m, _, _ = p1.split(":")

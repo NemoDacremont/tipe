@@ -127,7 +127,7 @@ def afficheVitessesMoyennes(donneesVoitures, vitessesReelles, dt=DT):
 
 
 def afficheVitessesMoyennesMinutes(donneesVoitures, vitessesReelles, dt=DT):
-	dureeMoyenne = 600
+	dureeMoyenne = 60
 
 	nombreParties = int(len(donneesVoitures) * dt / dureeMoyenne)
 	taillePartie = int(len(donneesVoitures) / nombreParties)

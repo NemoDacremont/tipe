@@ -242,7 +242,10 @@ def simulationEchelon(valeurEchelon: float, temps: Temps, v_0: float, T: float,
 		ID = voitures[-1]["ID"] + 1
 
 	for i in range(len(temps)):
-		timerVoiture -= dt
+		# Façon virtuelle d'empêcher la création de nouvelles voitures s'il y a un débit nul
+		if valeurEchelon != 0:
+			timerVoiture -= dt
+
 		t = temps[i]
 
 		# Teste s'il faut créer une nouvelle voiture
@@ -252,6 +255,7 @@ def simulationEchelon(valeurEchelon: float, temps: Temps, v_0: float, T: float,
 				voitureSuivie = voitures[-1]
 
 			timerVoiture = 1 / valeurEchelon
+
 
 			physiqueVoiture = copy(physique)
 			if len(voitures) > 0:
@@ -316,7 +320,10 @@ def simulationRue(debitRue: list[float], v_0: float, T: float, a: float,
 	if feuxInit == []:
 		feux = FEUX_DEFAUT
 
-	for i in range(len(debitRue) - 1):
+	N = len(debitRue) - 1
+
+	for i in range(N):
+		print(f"faits: {i}/{N}, nombre de voitures: {len(voitures)}")
 		debit = debitRue[i + 1]  # la moyenne des temps à simulée est en i+1
 		temps = [fin * i + debut + k * dt for k in range(int((fin - debut) / dt))]
 

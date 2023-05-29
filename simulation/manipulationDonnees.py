@@ -154,7 +154,8 @@ def extraitVitesseMoyenne1(donneesVoitures):
 			vitessesMoyennes[i] += vx * 3.6
 			N += 1
 
-		vitessesMoyennes[i] /= N
+		if N != 0:
+			vitessesMoyennes[i] /= N
 
 	return vitessesMoyennes
 
