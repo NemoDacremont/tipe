@@ -8,6 +8,7 @@ from manipulationDonnees import convertiDonneesPlotVoitures, convertiDonneesPlot
 from affichage import afficheEcartAuReel, affichePositionVoitures, afficheVitesseVoitures, \
 	afficheAccelerationVoitures, show, afficheVitessesMoyennes, afficheVitessesMoyennesMinutes
 
+import socket as so
 import sys
 
 def sauvegardeVitesseCSV(cheminFichier: str, vitesses: list):
@@ -21,6 +22,10 @@ def sauvegardeVitesseCSV(cheminFichier: str, vitesses: list):
 
 def sauvegardeVoitures(cheminFichier: str, voitures, exclude={"etat": True}):
 	fichier = open(cheminFichier, "w")
+
+	if len(voitures) == 0:
+		return
+
 
 	entete = []
 	for cle in voitures[0][1]:
@@ -158,11 +163,14 @@ def lireFeux(cheminFichier: str):
 temps = [(DEBUT + DT * i) / 100 for i in range(int((FIN - DEBUT) / DT))]
 echelon = 0.5  # Une voiture toutes les 2 sec
 
+hostname = so.gethostname()
+
 
 argv = sys.argv
 N_OFFSET = 0
 N = 1
 a = A
+v0 = V0
 if len(argv) >= 2:
 	N = int(argv[1])
 
@@ -172,17 +180,27 @@ if len(argv) >= 3:
 if len(argv) >= 4:
 	a = float(argv[3])
 
+if len(argv) >= 5:
+	v0 = float(argv[4])
+
 if N_OFFSET < 0:
 	N_OFFSET = 0
 
 
 
 print(a)
+nomFichierSauvegardeTemporaireVoitures = f"./sim_tmp/{hostname}/voitures{a}{v0}.csv"
+nomFichierSauvegardeTemporaireFeux = f"./sim_tmp/{hostname}/feux{a}{v0}.csv"
+nomFichierSauvegardeVitesses = f"./vitessesSimulees/{hostname}/vitesses{a}{v0}.csv"
+
+
+
 debits = lireFichierDebit("./debitVehicule/1-28/Strasbourg_P1")
 vitesses = lireFichierVitesse("./vitesseVehicule/1-28/Strasbourg_P1")
 
-voituresInit = []  # lireVoitures(f"./sim_tmp/voitures{a}.csv")
-feuxInit = []  # lireFeux(f"./sim_tmp/feux{a}.csv")
+
+voituresInit = lireVoitures(nomFichierSauvegardeTemporaireVoitures)
+feuxInit = lireFeux(nomFichierSauvegardeTemporaireFeux)
 
 
 # print(voituresInit)
@@ -194,7 +212,7 @@ vitesses = [vitesses[N_OFFSET + i] for i in range(N + 1)]
 # Simulation
 donneesVoitures, donneesFeux = simulationRue(debits, V0, T, a, B,
 	DELTA, L, S0, S1, physique=PHYSIQUE, distMax=DIST_MAX, voituresInit=voituresInit
-	)  # , feuxInit=feuxInit)
+	, feuxInit=feuxInit)
 
 
 # Vitesses moyenne pour chaque instants
@@ -206,11 +224,12 @@ vitessesMoyennes_instants = extraitVitesseMoyenne1(donneesVoitures)
 voitureIDs, tempsVoitures, donneesPlotVoitures = convertiDonneesPlotVoitures(donneesVoitures)
 feuIDs, tempsFeux, donneesPlotFeux = convertiDonneesPlotFeux(donneesFeux)
 
-# sauvegardeVitesseCSV(f"./vitessesSimulees/vitesses{a}.csv", vitessesMoyennes_instants)
-# sauvegardeVoitures(f"./sim_tmp/voitures{a}.csv", donneesVoitures[-1])
-# sauvegardeFeux(f"./sim_tmp/feux{a}.csv", donneesFeux[-1])
+sauvegardeVitesseCSV(nomFichierSauvegardeVitesses, vitessesMoyennes_instants)
+sauvegardeVoitures(nomFichierSauvegardeTemporaireVoitures, donneesVoitures[-1])
+sauvegardeFeux(nomFichierSauvegardeTemporaireFeux, donneesFeux[-1])
 
 
+"""
 ###
 ### Affichage
 ###
@@ -238,4 +257,5 @@ afficheEcartAuReel(donneesVoitures, vitesses, DT)
 
 
 show()
+"""
 

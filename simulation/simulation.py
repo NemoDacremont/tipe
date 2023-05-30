@@ -315,16 +315,17 @@ def simulationRue(debitRue: list[float], v_0: float, T: float, a: float,
 	donneesVoitures = []
 	donneesFeux = [] 
 	voitures = voituresInit
-
 	feux = feuxInit
+
 	if feuxInit == []:
 		feux = FEUX_DEFAUT
 
 	N = len(debitRue) - 1
 
 	for i in range(N):
-		print(f"faits: {i}/{N}, nombre de voitures: {len(voitures)}")
 		debit = debitRue[i + 1]  # la moyenne des temps à simulée est en i+1
+		print(f"faits: {i}/{N}, nombre de voitures: {len(voitures)}, debit={debit}")
+
 		temps = [fin * i + debut + k * dt for k in range(int((fin - debut) / dt))]
 
 		donneesVoits, donneesF, voitures, feux = simulationEchelon(debit, temps, v_0, T, a, b, delta,
@@ -333,6 +334,8 @@ def simulationRue(debitRue: list[float], v_0: float, T: float, a: float,
 
 		donneesVoitures += donneesVoits
 		donneesFeux += donneesF
+
+		print(f"fin {i}: nombre de voitures = {len(voitures)}")
 
 	return donneesVoitures, donneesFeux
 

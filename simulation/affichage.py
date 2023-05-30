@@ -137,6 +137,8 @@ def afficheVitessesMoyennesMinutes(donneesVoitures, vitessesReelles, dt=DT):
 	# / 100 car centisecondes vers secondes
 	temps = [(i * taillePartie) / 100 for i in range(nombreParties)]
 
+	vitessesMoyennes_minutes = moyenneGlissante(vitessesMoyennes_minutes, 4)
+
 	plt.figure()
 	plt.title("Vitesse moyenne minutes")
 	plt.plot(temps, vitessesMoyennes_minutes, "+-", label="Vitesse simulation")
@@ -148,6 +150,7 @@ def afficheVitessesMoyennesMinutes(donneesVoitures, vitessesReelles, dt=DT):
 
 	indicesVitesse = [(i * taillePartie) / 100 for i in range(nombreParties)]
 	# On affiche à partir de 1 pour faire joli
+	vitessesReelles = moyenneGlissante(vitessesReelles, 4)
 	plt.plot(indicesVitesse, vitessesReelles[1:], "+-", label="Vitesse réelle")
 
 	plt.xlabel("temps (en s)")
