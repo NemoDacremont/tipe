@@ -151,7 +151,7 @@ def extraitVitesseMoyenne1(donneesVoitures):
 		for voitureEl in voituresEls:
 			_, voiture = voitureEl
 			vx = voiture["physique"]["vx"]
-			vitessesMoyennes[i] += vx * 3.6
+			vitessesMoyennes[i] += vx 
 			N += 1
 
 		if N != 0:
@@ -176,7 +176,7 @@ def extraitVitesseMoyenne(donneesVoitures, deltaT: float, dt=DT):
 			for voitureEl in voituresEls:
 				_, voiture = voitureEl
 				vx = voiture["physique"]["vx"]
-				vitessesMoyennes[i] += vx * 3.6
+				vitessesMoyennes[i] += vx 
 				N += 1
 
 		vitessesMoyennes[i] = vitessesMoyennes[i] / N

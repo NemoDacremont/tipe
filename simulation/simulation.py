@@ -335,7 +335,15 @@ def simulationRue(debitRue: list[float], v_0: float, T: float, a: float,
 		donneesVoitures += donneesVoits
 		donneesFeux += donneesF
 
-		print(f"fin {i}: nombre de voitures = {len(voitures)}")
+		vit = 0
+		for voiture in voitures:
+			vit += voiture["physique"]["vx"]
+
+		if len(voitures) > 0:
+			vit /= len(voitures)
+
+		print(f"fin {i}: nombre de voitures = {len(voitures)}, vit={vit}")
+
 
 	return donneesVoitures, donneesFeux
 

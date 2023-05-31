@@ -189,18 +189,22 @@ if N_OFFSET < 0:
 
 
 print(a)
-nomFichierSauvegardeTemporaireVoitures = f"./sim_tmp/{hostname}/voitures{a}{v0}.csv"
-nomFichierSauvegardeTemporaireFeux = f"./sim_tmp/{hostname}/feux{a}{v0}.csv"
-nomFichierSauvegardeVitesses = f"./vitessesSimulees/{hostname}/vitesses{a}{v0}.csv"
+nomFichierSauvegardeTemporaireVoitures = f"./sim_tmp/{hostname}/voitures{a}_{v0}.csv"
+nomFichierSauvegardeTemporaireFeux = f"./sim_tmp/{hostname}/feux{a}_{v0}.csv"
+nomFichierSauvegardeVitesses = f"./vitessesSimulees/{hostname}/vitesses{a}_{v0}.csv"
 
 
-
+# Véhicules / h
 debits = lireFichierDebit("./debitVehicule/1-28/Strasbourg_P1")
+
+# en km/h
 vitesses = lireFichierVitesse("./vitesseVehicule/1-28/Strasbourg_P1")
+# converti en m/s
+vitesses = [vitesses[i] / 3.6 for i in range(len(vitesses))]
 
 
-voituresInit = lireVoitures(nomFichierSauvegardeTemporaireVoitures)
-feuxInit = lireFeux(nomFichierSauvegardeTemporaireFeux)
+voituresInit = []  # lireVoitures(nomFichierSauvegardeTemporaireVoitures)
+feuxInit = []  # lireFeux(nomFichierSauvegardeTemporaireFeux)
 
 
 # print(voituresInit)
@@ -227,6 +231,7 @@ feuIDs, tempsFeux, donneesPlotFeux = convertiDonneesPlotFeux(donneesFeux)
 sauvegardeVitesseCSV(nomFichierSauvegardeVitesses, vitessesMoyennes_instants)
 sauvegardeVoitures(nomFichierSauvegardeTemporaireVoitures, donneesVoitures[-1])
 sauvegardeFeux(nomFichierSauvegardeTemporaireFeux, donneesFeux[-1])
+
 
 
 """
@@ -258,4 +263,5 @@ afficheEcartAuReel(donneesVoitures, vitesses, DT)
 
 show()
 """
+
 
